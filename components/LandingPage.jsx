@@ -1,9 +1,13 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import Navbar from './Navbar'
 import '../styles/LandingPage.css'
 
-export default function LandingPage({ onGetStarted }) {
+export default function LandingPage() {
+  const navigate = useNavigate();
   return (
     <div className="landing-page">
+      <Navbar />
       {/* Hero Section */}
       <section className="landing-hero">
         <div className="landing-hero-background">
@@ -30,7 +34,7 @@ export default function LandingPage({ onGetStarted }) {
           </p>
           
           <div className="landing-hero-actions">
-            <button className="landing-cta-primary" onClick={onGetStarted}>
+            <button className="landing-cta-primary" onClick={() => navigate('/signup')}>
               <span>Get Started Free</span>
               <span className="landing-cta-icon">→</span>
             </button>
@@ -295,7 +299,7 @@ export default function LandingPage({ onGetStarted }) {
                 </div>
               </div>
               
-              <button className="landing-cta-primary" onClick={onGetStarted}>
+              <button className="landing-cta-primary" onClick={() => navigate('/signup')}>
                 Start Your Journey
                 <span className="landing-cta-icon">→</span>
               </button>
@@ -397,7 +401,7 @@ export default function LandingPage({ onGetStarted }) {
                 Start your journey today - it's free!
               </p>
               <div className="landing-cta-actions">
-                <button className="landing-cta-primary large" onClick={onGetStarted}>
+                <button className="landing-cta-primary large" onClick={() => navigate('/signup')}>
                   Get Started Free
                   <span className="landing-cta-icon">→</span>
                 </button>
