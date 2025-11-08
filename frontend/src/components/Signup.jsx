@@ -255,22 +255,6 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
               <span className="social-icon">🔍</span>
               Google
             </button>
-            <button
-              className="auth-social-button facebook"
-              onClick={() => handleSocialSignup('facebook')}
-              disabled={isLoading}
-            >
-              <span className="social-icon">👤</span>
-              Facebook
-            </button>
-            <button
-              className="auth-social-button apple"
-              onClick={() => handleSocialSignup('apple')}
-              disabled={isLoading}
-            >
-              <span className="social-icon">🍎</span>
-              Apple
-            </button>
           </div>
 
           <div className="auth-footer">

@@ -131,24 +131,37 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
   // Create new session when opening chat without a session
   useEffect(() => {
     if (isOpen && user && !currentSessionId) {
+      console.log('Creating new session for user:', user.uid)
       createNewSession()
     }
   }, [isOpen, user])
   
   const loadChatSessions = async () => {
-    if (!user) return
+    if (!user) {
+      console.warn('No user found, cannot load chat sessions')
+      return
+    }
     
+    console.log('Loading chat sessions for user:', user.uid)
     const result = await getUserChatSessions(user.uid)
     if (result.success) {
+      console.log('Loaded sessions:', result.sessions)
       setChatSessions(result.sessions)
+    } else {
+      console.error('Failed to load sessions:', result.error)
     }
   }
   
   const createNewSession = async () => {
-    if (!user) return
+    if (!user) {
+      console.error('Cannot create session: No user')
+      return
+    }
     
+    console.log('Creating new chat session for user:', user.uid)
     const result = await createChatSession(user.uid, 'New Chat')
     if (result.success) {
+      console.log('Session created successfully:', result.sessionId)
       setCurrentSessionId(result.sessionId)
       setMessages([{
         role: 'assistant',
@@ -160,7 +173,7 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
   }
   
   const loadChatSession = async (sessionId) => {
-    const result = await getChatSessionMessages(sessionId)
+    const result = await getChatSessionMessages(user.uid, sessionId)
     if (result.success) {
       // Convert message pairs to chat format
       const loadedMessages = [{
@@ -249,7 +262,17 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
       
       // Save message pair to Firestore
       if (currentSessionId) {
-        await saveMessagePair(currentSessionId, trimmedInput, aiResponseText)
+        console.log('Saving message to session:', currentSessionId)
+        const saveResult = await saveMessagePair(user.uid, currentSessionId, trimmedInput, aiResponseText)
+        if (saveResult.success) {
+          console.log('Message saved successfully')
+          // Reload sessions to update the list
+          await loadChatSessions()
+        } else {
+          console.error('Failed to save message:', saveResult.error)
+        }
+      } else {
+        console.error('Cannot save message: No active session ID')
       }
       
     } catch (err) {

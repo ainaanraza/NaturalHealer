@@ -1,6 +1,3 @@
-// Firestore Security Rules for Natural Healer App
-// Copy these rules to your Firebase Console > Firestore Database > Rules
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,39 +13,17 @@ service cloud.firestore {
     }
     
     // Users Collection
-    // Users can only read and write their own user document
-    match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && 
-                       request.resource.data.uid == userId &&
-                       request.resource.data.email == request.auth.token.email;
-      allow update: if isOwner(userId);
-      allow delete: if false; // Prevent user deletion from client
-    }
-    
-    // Chat Sessions Collection
-    // Users can only access their own chat sessions
-    match /chatSessions/{sessionId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && 
-                       request.resource.data.userId == request.auth.uid &&
-                       request.resource.data.title is string &&
-                       request.resource.data.messageCount == 0;
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    match /Users/{userId} {
+      allow read, write: if isOwner(userId);
       
-      // Messages Subcollection
-      // Users can read/write messages in their own sessions
-      match /messages/{messageId} {
-        // Get parent session document to check userId
-        allow read: if isSignedIn() && 
-                       get(/databases/$(database)/documents/chatSessions/$(sessionId)).data.userId == request.auth.uid;
-        allow create: if isSignedIn() && 
-                         get(/databases/$(database)/documents/chatSessions/$(sessionId)).data.userId == request.auth.uid &&
-                         request.resource.data.userMessage is string &&
-                         request.resource.data.aiResponse is string;
-        allow update: if false; // Messages are immutable once created
-        allow delete: if false; // Messages can't be individually deleted
+      // Chats Subcollection (inside Users)
+      match /Chats/{sessionId} {
+        allow read, write: if isOwner(userId);
+        
+        // Messages Subcollection (inside Chats)
+        match /messages/{messageId} {
+          allow read, write: if isOwner(userId);
+        }
       }
     }
     
