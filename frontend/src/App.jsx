@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from './services/firebase'
+import { signOutUser } from './services/authService'
 import LandingPage from './components/LandingPage'
 import Login from './components/Login'
 import Signup from './components/Signup'
@@ -12,30 +15,51 @@ function AppRoutes() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
   const [isAIChatOpen, setIsAIChatOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check if user is logged in
-    const userData = localStorage.getItem('naturalHealer_user')
-    const authStatus = localStorage.getItem('naturalHealer_isAuthenticated')
-    if (userData && authStatus === 'true') {
-      setUser(JSON.parse(userData))
-      setIsAuthenticated(true)
-    }
+    // Listen to Firebase auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || 'User'
+        })
+        setIsAuthenticated(true)
+      } else {
+        // User is signed out
+        setUser(null)
+        setIsAuthenticated(false)
+      }
+      setIsLoading(false)
+    })
+
+    // Cleanup subscription
+    return () => unsubscribe()
   }, [])
   
   const handleLogin = (userData) => {
-    setUser(userData)
-    setIsAuthenticated(true)
+    // Firebase auth state listener will handle setting user state
+    navigate('/home')
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('naturalHealer_user')
-    localStorage.removeItem('naturalHealer_isAuthenticated')
-    setUser(null)
-    setIsAuthenticated(false)
+  const handleLogout = async () => {
+    await signOutUser()
     setIsAIChatOpen(false)
     navigate('/')
+  }
+
+  // Show loading spinner while checking auth state
+  if (isLoading) {
+    return (
+      <div className="auth-loading">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    )
   }
 
   return (
@@ -96,10 +120,11 @@ function AppRoutes() {
       </Routes>
       
       {/* Floating AI Chat - only show when authenticated */}
-      {isAuthenticated && (
+      {isAuthenticated && user && (
         <FloatingAIChat 
           isOpen={isAIChatOpen} 
-          onClose={() => setIsAIChatOpen(false)} 
+          onClose={() => setIsAIChatOpen(false)}
+          user={user}
         />
       )}
     </>

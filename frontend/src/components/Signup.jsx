@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { signUpUser } from '../services/authService';
 import '../styles/Auth.css';
 
 const Signup = ({ onSignup, onSwitchToLogin }) => {
@@ -11,6 +12,7 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -21,6 +23,9 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
     // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    if (errorMessage) {
+      setErrorMessage('');
     }
   };
 
@@ -43,8 +48,6 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain uppercase, lowercase, and number';
     }
     
     if (!formData.confirmPassword) {
@@ -61,50 +64,29 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
+    setErrorMessage('');
     
-    // Mock signup delay
-    setTimeout(() => {
-      // Store user session in localStorage
-      const userData = {
-        name: formData.name,
-        email: formData.email,
-        signupTime: new Date().toISOString(),
-        loginTime: new Date().toISOString()
-      };
-      
-      localStorage.setItem('naturalHealer_user', JSON.stringify(userData));
-      localStorage.setItem('naturalHealer_isAuthenticated', 'true');
-      
-      setIsLoading(false);
-      onSignup(userData);
-    }, 1500);
+    // Use Firebase authentication
+    const result = await signUpUser(formData.email, formData.password, formData.name);
+    
+    if (result.success) {
+      onSignup(result.user);
+    } else {
+      setErrorMessage(result.error);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleSocialSignup = (provider) => {
-    setIsLoading(true);
-    
-    // Mock social signup
-    setTimeout(() => {
-      const userData = {
-        email: `user@${provider}.com`,
-        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        signupTime: new Date().toISOString(),
-        loginTime: new Date().toISOString(),
-        provider: provider
-      };
-      
-      localStorage.setItem('naturalHealer_user', JSON.stringify(userData));
-      localStorage.setItem('naturalHealer_isAuthenticated', 'true');
-      
-      setIsLoading(false);
-      onSignup(userData);
-    }, 1500);
+    // Social signup can be implemented later with Firebase Auth providers
+    setErrorMessage(`${provider} signup coming soon!`);
   };
 
   return (
@@ -127,6 +109,13 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+            {errorMessage && (
+              <div className="auth-error-banner">
+                <span className="error-icon">⚠️</span>
+                {errorMessage}
+              </div>
+            )}
+            
             <div className="auth-form-group">
               <label htmlFor="name" className="auth-label">
                 <span className="label-icon">👤</span>

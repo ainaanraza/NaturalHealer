@@ -1,12 +1,28 @@
 # 🌿 Natural Healer - Ayurvedic Wellness Platform
 
-A modern, beautifully designed React application for discovering natural Ayurvedic remedies and wellness guidance. Features an intelligent AI assistant, comprehensive remedy database, and intuitive user experience.
+A modern, beautifully designed React application for discovering natural Ayurvedic remedies and wellness guidance. Features an intelligent AI assistant powered by Google Gemini, Firebase authentication, cloud-based chat history, and a comprehensive remedy database.
 
 ![Version](https://img.shields.io/badge/version-2.0.0-green)
 ![React](https://img.shields.io/badge/react-18.3.1-blue)
+![Firebase](https://img.shields.io/badge/firebase-11.x-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## ✨ Features
+
+### 🔐 User Authentication (NEW!)
+- **Firebase Authentication** for secure signup and login
+- **Email/Password authentication** with validation
+- **Password reset** via email
+- **Persistent sessions** across devices
+- **Protected routes** for authenticated users
+
+### 💾 Chat History (NEW!)
+- **Cloud storage** for all conversations using Firestore
+- **Session management** - create, load, and switch between chats
+- **Auto-save** every message pair (question + answer)
+- **History sidebar** to view and access previous conversations
+- **Smart naming** - sessions titled from first question
+- **Cross-device sync** - access chats from anywhere
 
 ### 🎨 Modern Design
 - **Gradient-based UI** with smooth animations and transitions
@@ -22,17 +38,19 @@ A modern, beautifully designed React application for discovering natural Ayurved
 - **12+ conditions** with 50+ natural remedies
 
 ### 🤖 AI Wellness Assistant
-- **Intelligent chatbot** powered by Ayurvedic knowledge base
+- **Powered by Google Gemini AI** (gemini-2.0-flash model)
+- **Rich text formatting** - headings, bold, italic, lists
 - **Context-aware responses** tailored to specific conditions
 - **Quick question buttons** for common queries
 - **Real-time conversation** with typing indicators
 - **Educational guidance** on herbs, diet, prevention, and lifestyle
+- **Persistent chat history** saved to cloud
 
 ### 📱 User Experience
 - **Smooth animations** using CSS transitions and keyframes
 - **Loading states** and feedback throughout
 - **Accessibility features** including ARIA labels and keyboard navigation
-- **Local storage** for persistent favorites
+- **Cloud storage** for favorites and chat history
 - **Modal dialogs** with detailed condition information
 
 ## 🚀 Getting Started
@@ -40,6 +58,7 @@ A modern, beautifully designed React application for discovering natural Ayurved
 ### Prerequisites
 - Node.js 16+ and npm installed
 - Modern web browser
+- Firebase project (see Firebase Setup below)
 
 ### Installation
 
@@ -54,12 +73,18 @@ cd NaturalHealer/frontend
 npm install
 ```
 
-3. **Start development server**
+3. **Firebase Setup** (Already configured, but for reference):
+   - Project ID: `naturalhealer`
+   - Authentication: Email/Password enabled
+   - Firestore Database: Created with collections for users and chatSessions
+   - See `FIREBASE_INTEGRATION.md` for detailed setup
+
+4. **Start development server**
 ```bash
 npm run dev
 ```
 
-4. **Open your browser**
+5. **Open your browser**
 Navigate to `http://localhost:5173` (or the port shown in terminal)
 
 ### Build for Production
@@ -70,6 +95,19 @@ npm run build
 
 The optimized production build will be in the `dist` folder.
 
+## 🔥 Firebase Configuration
+
+This app uses Firebase for:
+- **Authentication**: User signup/login/logout
+- **Firestore**: Chat history and user data storage
+
+Configuration is in `src/services/firebase.js`. See `FIREBASE_INTEGRATION.md` for complete documentation.
+
+**Important for Production**:
+- Update Firestore security rules (template in `firestore.rules`)
+- Consider moving API keys to environment variables
+- Enable email verification for new users
+
 ## 📁 Project Structure
 
 ```
@@ -79,6 +117,10 @@ frontend/
 │   │   ├── Navbar.jsx       # Navigation bar with mobile menu
 │   │   ├── Hero.jsx         # Hero section with animated gradients
 │   │   ├── CategoryFilter.jsx  # Category selection tabs
+│   │   ├── Login.jsx        # Firebase email/password login
+│   │   ├── Signup.jsx       # Firebase user registration
+│   │   ├── ForgotPassword.jsx  # Password reset flow
+│   │   ├── FloatingAIChat.jsx  # AI chat with history
 │   │   ├── SearchBar.jsx    # Search input with clear button
 │   │   ├── DiseaseCard.jsx  # Condition card with hover effects
 │   │   ├── DiseaseModal.jsx # Detailed condition modal
@@ -95,14 +137,46 @@ frontend/
 │   │   ├── SearchBar.css
 │   │   ├── DiseaseCard.css
 │   │   ├── DiseaseModal.css
-│   │   └── AIAssistant.css
+│   │   ├── Login.jsx        # Firebase email/password login
+│   │   ├── Signup.jsx       # Firebase user registration
+│   │   ├── ForgotPassword.jsx  # Password reset flow
+│   │   ├── FloatingAIChat.jsx  # AI chat with history
+│   │   └── ...              # Other components
+│   ├── services/            # Firebase and API services
+│   │   ├── firebase.js      # Firebase initialization
+│   │   ├── authService.js   # Authentication functions
+│   │   ├── chatHistoryService.js  # Firestore chat operations
+│   │   └── geminiService.js # Google Gemini AI integration
+│   ├── styles/              # CSS stylesheets
+│   │   ├── Auth.css         # Authentication pages styling
+│   │   ├── FloatingAIChat.css  # Chat interface styling
+│   │   └── AIAssistant.css  # Modal AI styling
 │   ├── theme.js             # Design system and color palette
 │   ├── App.jsx              # Main application component
 │   └── main.jsx             # Application entry point
 ├── index.html               # HTML template
 ├── package.json             # Dependencies and scripts
+├── firestore.rules          # Firestore security rules template
+├── FIREBASE_INTEGRATION.md  # Complete Firebase documentation
 └── README.md               # This file
 ```
+
+## 🔑 Key Dependencies
+
+```json
+{
+  "react": "^18.3.1",
+  "react-router-dom": "^7.9.5",
+  "firebase": "^11.x.x",
+  "@google/generative-ai": "^0.24.1"
+}
+```
+
+- **React**: UI framework
+- **React Router**: Client-side routing and navigation
+- **Firebase**: Authentication and Firestore database
+- **Google Generative AI**: Gemini AI model integration
+- **Vite**: Fast build tool and dev server
 
 ## 🎨 Design System
 
@@ -133,10 +207,17 @@ The application uses a carefully crafted color system:
 
 ## 🧩 Key Components
 
+### Authentication Pages
+- **Login**: Email/password with Firebase, error handling, "Remember me"
+- **Signup**: User registration with profile creation in Firestore
+- **ForgotPassword**: Email-based password reset flow
+- Modern glassmorphism design with animated gradients
+
 ### Navbar
 - Sticky navigation with blur backdrop
 - Mobile-responsive hamburger menu
-- Quick access to favorites and actions
+- AI Assistant button with pulsing animation
+- Logout functionality
 
 ### Hero
 - Animated gradient orbs in background

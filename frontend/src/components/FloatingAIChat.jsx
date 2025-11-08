@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { generateAIResponse, validateUserInput, getSuggestedQuestions } from '../services/geminiService'
+import { 
+  createChatSession, 
+  saveMessagePair, 
+  getUserChatSessions, 
+  getChatSessionMessages 
+} from '../services/chatHistoryService'
 import '../styles/FloatingAIChat.css'
 
 // Function to format AI response text with markdown-style formatting
@@ -98,7 +104,7 @@ function formatInlineStyles(text) {
   return text;
 }
 
-export default function FloatingAIChat({ isOpen, onClose }) {
+export default function FloatingAIChat({ isOpen, onClose, user }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -109,8 +115,78 @@ export default function FloatingAIChat({ isOpen, onClose }) {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState(null)
+  const [currentSessionId, setCurrentSessionId] = useState(null)
+  const [chatSessions, setChatSessions] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  
+  // Load chat sessions when component mounts
+  useEffect(() => {
+    if (user && isOpen) {
+      loadChatSessions()
+    }
+  }, [user, isOpen])
+  
+  // Create new session when opening chat without a session
+  useEffect(() => {
+    if (isOpen && user && !currentSessionId) {
+      createNewSession()
+    }
+  }, [isOpen, user])
+  
+  const loadChatSessions = async () => {
+    if (!user) return
+    
+    const result = await getUserChatSessions(user.uid)
+    if (result.success) {
+      setChatSessions(result.sessions)
+    }
+  }
+  
+  const createNewSession = async () => {
+    if (!user) return
+    
+    const result = await createChatSession(user.uid, 'New Chat')
+    if (result.success) {
+      setCurrentSessionId(result.sessionId)
+      setMessages([{
+        role: 'assistant',
+        text: `Hello! 🌿 I'm your Ayurvedic wellness assistant powered by AI. I can help answer questions about natural remedies, health conditions, diet, lifestyle, and holistic wellness. How can I assist you today?`,
+        timestamp: new Date()
+      }])
+      loadChatSessions()
+    }
+  }
+  
+  const loadChatSession = async (sessionId) => {
+    const result = await getChatSessionMessages(sessionId)
+    if (result.success) {
+      // Convert message pairs to chat format
+      const loadedMessages = [{
+        role: 'assistant',
+        text: `Hello! 🌿 I'm your Ayurvedic wellness assistant powered by AI. I can help answer questions about natural remedies, health conditions, diet, lifestyle, and holistic wellness. How can I assist you today?`,
+        timestamp: new Date()
+      }]
+      
+      result.messages.forEach(msgPair => {
+        loadedMessages.push({
+          role: 'user',
+          text: msgPair.userMessage,
+          timestamp: msgPair.timestamp
+        })
+        loadedMessages.push({
+          role: 'assistant',
+          text: msgPair.aiResponse,
+          timestamp: msgPair.timestamp
+        })
+      })
+      
+      setMessages(loadedMessages)
+      setCurrentSessionId(sessionId)
+      setShowHistory(false)
+    }
+  }
   
   // Auto-scroll to latest message
   const scrollToBottom = () => {
@@ -170,6 +246,12 @@ export default function FloatingAIChat({ isOpen, onClose }) {
       }
       
       setMessages(prev => [...prev, assistantMessage])
+      
+      // Save message pair to Firestore
+      if (currentSessionId) {
+        await saveMessagePair(currentSessionId, trimmedInput, aiResponseText)
+      }
+      
     } catch (err) {
       console.error('AI Response Error:', err);
       
@@ -221,6 +303,17 @@ export default function FloatingAIChat({ isOpen, onClose }) {
       {/* Chat Window */}
       <div className="floating-chat-window">
         <div className="floating-chat-header">
+          <button 
+            className="floating-chat-history-btn"
+            onClick={() => setShowHistory(!showHistory)}
+            aria-label="Chat history"
+            title="Chat history"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </button>
           <div className="floating-chat-header-content">
             <div className="floating-chat-avatar">
               <div className="floating-chat-avatar-icon">🤖</div>
@@ -231,16 +324,61 @@ export default function FloatingAIChat({ isOpen, onClose }) {
               <p className="floating-chat-subtitle">Powered by Ayurvedic Knowledge</p>
             </div>
           </div>
-          <button 
-            className="floating-chat-close"
-            onClick={onClose}
-            aria-label="Close chat"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="floating-chat-header-actions">
+            <button 
+              className="floating-chat-new-btn"
+              onClick={createNewSession}
+              aria-label="New chat"
+              title="Start new chat"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </button>
+            <button 
+              className="floating-chat-close"
+              onClick={onClose}
+              aria-label="Close chat"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
+        
+        {/* Chat History Sidebar */}
+        {showHistory && (
+          <div className="floating-chat-history">
+            <div className="floating-history-header">
+              <h4>Chat History</h4>
+              <button onClick={() => setShowHistory(false)}>×</button>
+            </div>
+            <div className="floating-history-list">
+              {chatSessions.length === 0 ? (
+                <div className="floating-history-empty">
+                  <p>No chat history yet</p>
+                  <span>Start a conversation!</span>
+                </div>
+              ) : (
+                chatSessions.map(session => (
+                  <div
+                    key={session.id}
+                    className={`floating-history-item ${currentSessionId === session.id ? 'active' : ''}`}
+                    onClick={() => loadChatSession(session.id)}
+                  >
+                    <div className="floating-history-item-title">{session.title}</div>
+                    <div className="floating-history-item-meta">
+                      <span>{session.messageCount} messages</span>
+                      <span>•</span>
+                      <span>{session.updatedAt?.toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
         
         <div className="floating-chat-messages">
           {messages.map((msg, index) => (

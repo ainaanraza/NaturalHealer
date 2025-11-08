@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { resetPassword } from '../services/authService';
 import '../styles/Auth.css';
 
 const ForgotPassword = ({ onBackToLogin }) => {
@@ -24,31 +25,35 @@ const ForgotPassword = ({ onBackToLogin }) => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateEmail()) return;
     
     setIsLoading(true);
     
-    // Mock password reset delay
-    setTimeout(() => {
-      setIsLoading(false);
+    // Use Firebase password reset
+    const result = await resetPassword(email);
+    
+    if (result.success) {
       setIsSuccess(true);
-      
-      // Store reset request in localStorage (for demo purposes)
-      localStorage.setItem('naturalHealer_passwordResetEmail', email);
-      localStorage.setItem('naturalHealer_passwordResetTime', new Date().toISOString());
-    }, 1500);
+    } else {
+      setError(result.error);
+    }
+    
+    setIsLoading(false);
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      // Show success message
+    const result = await resetPassword(email);
+    setIsLoading(false);
+    
+    if (result.success) {
       alert('Reset link resent to your email!');
-    }, 1000);
+    } else {
+      setError(result.error);
+    }
   };
 
   return (

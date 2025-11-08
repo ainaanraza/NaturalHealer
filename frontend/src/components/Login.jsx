@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { signInUser } from '../services/authService';
 import '../styles/Auth.css';
 
 const Login = ({ onLogin, onSwitchToSignup, onSwitchToForgotPassword }) => {
@@ -9,6 +10,7 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToForgotPassword }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,6 +21,9 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToForgotPassword }) => {
     // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    if (errorMessage) {
+      setErrorMessage('');
     }
   };
 
@@ -41,49 +46,29 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToForgotPassword }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
+    setErrorMessage('');
     
-    // Mock authentication delay
-    setTimeout(() => {
-      // Store user session in localStorage
-      const userData = {
-        email: formData.email,
-        name: formData.email.split('@')[0],
-        loginTime: new Date().toISOString(),
-        rememberMe: formData.rememberMe
-      };
-      
-      localStorage.setItem('naturalHealer_user', JSON.stringify(userData));
-      localStorage.setItem('naturalHealer_isAuthenticated', 'true');
-      
-      setIsLoading(false);
-      onLogin(userData);
-    }, 1500);
+    // Use Firebase authentication
+    const result = await signInUser(formData.email, formData.password);
+    
+    if (result.success) {
+      onLogin(result.user);
+    } else {
+      setErrorMessage(result.error);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleSocialLogin = (provider) => {
-    setIsLoading(true);
-    
-    // Mock social login
-    setTimeout(() => {
-      const userData = {
-        email: `user@${provider}.com`,
-        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        loginTime: new Date().toISOString(),
-        provider: provider
-      };
-      
-      localStorage.setItem('naturalHealer_user', JSON.stringify(userData));
-      localStorage.setItem('naturalHealer_isAuthenticated', 'true');
-      
-      setIsLoading(false);
-      onLogin(userData);
-    }, 1500);
+    // Social login can be implemented later with Firebase Auth providers
+    setErrorMessage(`${provider} login coming soon!`);
   };
 
   return (
@@ -106,6 +91,13 @@ const Login = ({ onLogin, onSwitchToSignup, onSwitchToForgotPassword }) => {
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+            {errorMessage && (
+              <div className="auth-error-banner">
+                <span className="error-icon">⚠️</span>
+                {errorMessage}
+              </div>
+            )}
+            
             <div className="auth-form-group">
               <label htmlFor="email" className="auth-label">
                 <span className="label-icon">📧</span>
