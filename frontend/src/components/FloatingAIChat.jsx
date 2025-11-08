@@ -2,6 +2,102 @@ import React, { useState, useRef, useEffect } from 'react'
 import { generateAIResponse, validateUserInput, getSuggestedQuestions } from '../services/geminiService'
 import '../styles/FloatingAIChat.css'
 
+// Function to format AI response text with markdown-style formatting
+function formatMessageText(text) {
+  const lines = text.split('\n');
+  const formatted = [];
+  let listItems = [];
+  let listType = null; // 'bullet' or 'number'
+  
+  const flushList = () => {
+    if (listItems.length > 0) {
+      formatted.push(
+        <ul key={`list-${formatted.length}`} className="formatted-list">
+          {listItems.map((item, i) => (
+            <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
+          ))}
+        </ul>
+      );
+      listItems = [];
+      listType = null;
+    }
+  };
+  
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    
+    if (!trimmed) {
+      flushList();
+      formatted.push(<br key={`br-${index}`} />);
+      return;
+    }
+    
+    // Handle bullet points (*, -, •)
+    const bulletMatch = trimmed.match(/^[*\-•]\s+(.+)$/);
+    if (bulletMatch) {
+      if (listType !== 'bullet') flushList();
+      listType = 'bullet';
+      listItems.push(formatInlineStyles(bulletMatch[1]));
+      return;
+    }
+    
+    // Handle numbered lists (1., 2., etc.)
+    const numberMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+    if (numberMatch) {
+      if (listType !== 'number') flushList();
+      listType = 'number';
+      listItems.push(formatInlineStyles(numberMatch[2]));
+      return;
+    }
+    
+    flushList();
+    
+    // Handle headings (##, ###, etc.)
+    if (trimmed.startsWith('###')) {
+      formatted.push(
+        <h4 key={`h4-${index}`} className="formatted-heading-3">
+          {formatInlineStyles(trimmed.replace(/^###\s*/, ''))}
+        </h4>
+      );
+    } else if (trimmed.startsWith('##')) {
+      formatted.push(
+        <h3 key={`h3-${index}`} className="formatted-heading-2">
+          {formatInlineStyles(trimmed.replace(/^##\s*/, ''))}
+        </h3>
+      );
+    } else if (trimmed.startsWith('#')) {
+      formatted.push(
+        <h2 key={`h2-${index}`} className="formatted-heading-1">
+          {formatInlineStyles(trimmed.replace(/^#\s*/, ''))}
+        </h2>
+      );
+    } else {
+      // Regular paragraph
+      formatted.push(
+        <p key={`p-${index}`} dangerouslySetInnerHTML={{ __html: formatInlineStyles(trimmed) }} />
+      );
+    }
+  });
+  
+  flushList();
+  return formatted;
+}
+
+// Format inline styles: **bold**, *italic*, `code`
+function formatInlineStyles(text) {
+  // Bold: **text**
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  
+  // Italic: *text* or _text_
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  text = text.replace(/_(.+?)_/g, '<em>$1</em>');
+  
+  // Code: `text`
+  text = text.replace(/`(.+?)`/g, '<code>$1</code>');
+  
+  return text;
+}
+
 export default function FloatingAIChat({ isOpen, onClose }) {
   const [messages, setMessages] = useState([
     {
@@ -154,12 +250,16 @@ export default function FloatingAIChat({ isOpen, onClose }) {
             >
               <div className="floating-message-content">
                 <div className="floating-message-text">
-                  {msg.text.split('\n').map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}
-                      {i < msg.text.split('\n').length - 1 && <br />}
-                    </React.Fragment>
-                  ))}
+                  {msg.role === 'assistant' ? (
+                    formatMessageText(msg.text)
+                  ) : (
+                    msg.text.split('\n').map((line, i) => (
+                      <React.Fragment key={i}>
+                        {line}
+                        {i < msg.text.split('\n').length - 1 && <br />}
+                      </React.Fragment>
+                    ))
+                  )}
                 </div>
                 <div className="floating-message-time">
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

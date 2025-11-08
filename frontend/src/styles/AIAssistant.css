@@ -149,6 +149,86 @@
   white-space: pre-wrap;
 }
 
+/* Formatted text styles for AI messages */
+.ai-message-text h2.formatted-heading-1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #047857;
+  margin: 16px 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.ai-message-text h3.formatted-heading-2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+  margin: 14px 0 6px 0;
+}
+
+.ai-message-text h4.formatted-heading-3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #10b981;
+  margin: 12px 0 6px 0;
+}
+
+.ai-message-text p {
+  margin: 8px 0;
+  line-height: 1.7;
+}
+
+.ai-message-text strong {
+  font-weight: 700;
+  color: #065f46;
+}
+
+.ai-message-text em {
+  font-style: italic;
+  color: #047857;
+}
+
+.ai-message-text code {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ai-message-text ul.formatted-list {
+  margin: 12px 0;
+  padding-left: 24px;
+  list-style: none;
+}
+
+.ai-message-text ul.formatted-list li {
+  position: relative;
+  margin: 8px 0;
+  line-height: 1.6;
+  padding-left: 8px;
+}
+
+.ai-message-text ul.formatted-list li::before {
+  content: "•";
+  position: absolute;
+  left: -16px;
+  color: #10b981;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.ai-message-text ul.formatted-list li strong {
+  color: #047857;
+  font-weight: 700;
+}
+
+.ai-message-text ul.formatted-list li em {
+  font-style: italic;
+}
+
 .ai-message.user .ai-message-text {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
