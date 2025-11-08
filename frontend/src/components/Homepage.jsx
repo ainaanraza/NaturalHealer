@@ -75,8 +75,8 @@ const Homepage = ({ user, onLogout, onOpenAIChat }) => {
       <div className="homepage-content">
         <div className="homepage-filters">
           <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            activeCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
           />
           <SearchBar
             searchQuery={searchQuery}
@@ -152,8 +152,8 @@ const Homepage = ({ user, onLogout, onOpenAIChat }) => {
                   key={disease.id}
                   disease={disease}
                   isFavorite={isFavorite(disease.id)}
-                  onToggleFavorite={() => toggleFavorite(disease.id)}
-                  onClick={() => handleCardClick(disease)}
+                  onToggleFavorite={toggleFavorite}
+                  onSelect={handleCardClick}
                 />
               ))}
             </div>
