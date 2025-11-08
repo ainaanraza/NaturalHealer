@@ -64,7 +64,7 @@ const Homepage = ({ user, onLogout, onOpenAIChat }) => {
         </div>
         <div className="homepage-hero-content">
           <h1 className="homepage-hero-title">
-            Welcome back, <span className="user-name">{user?.name || 'Healer'}</span>! 🌿
+            Welcome back, <span className="user-name">{user?.displayName || user?.name || 'Healer'}</span>! 🌿
           </h1>
           <p className="homepage-hero-subtitle">
             Explore natural remedies and holistic healing solutions for common health conditions
