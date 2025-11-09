@@ -1,4 +1,4 @@
-# 🌿 Natural Healer - Ayurvedic Wellness Platform
+#  Natural Healer - Ayurvedic Wellness Platform
 
 A modern, beautifully designed React application for discovering natural Ayurvedic remedies and wellness guidance. Features an intelligent AI assistant powered by Google Gemini, Firebase authentication, cloud-based chat history, and a comprehensive remedy database.
 
@@ -7,16 +7,16 @@ A modern, beautifully designed React application for discovering natural Ayurved
 ![Firebase](https://img.shields.io/badge/firebase-11.x-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-## ✨ Features
+##  Features
 
-### 🔐 User Authentication (NEW!)
+###  User Authentication (NEW!)
 - **Firebase Authentication** for secure signup and login
 - **Email/Password authentication** with validation
 - **Password reset** via email
 - **Persistent sessions** across devices
 - **Protected routes** for authenticated users
 
-### 💾 Chat History (NEW!)
+###  Chat History (NEW!)
 - **Cloud storage** for all conversations using Firestore
 - **Session management** - create, load, and switch between chats
 - **Auto-save** every message pair (question + answer)
@@ -24,20 +24,20 @@ A modern, beautifully designed React application for discovering natural Ayurved
 - **Smart naming** - sessions titled from first question
 - **Cross-device sync** - access chats from anywhere
 
-### 🎨 Modern Design
+###  Modern Design
 - **Gradient-based UI** with smooth animations and transitions
 - **Dark theme** optimized for comfortable viewing
 - **Responsive design** that works beautifully on all devices
 - **Glassmorphism effects** for a premium look
 - **Micro-interactions** throughout the interface
 
-### 🔍 Smart Discovery
+###  Smart Discovery
 - **Category filtering** by health condition type (Respiratory, Digestive, Mental Wellness, etc.)
 - **Advanced search** across conditions, symptoms, and remedies
 - **Favorites system** to save your preferred remedies
 - **12+ conditions** with 50+ natural remedies
 
-### 🤖 AI Wellness Assistant
+###  AI Wellness Assistant
 - **Powered by Google Gemini AI** (gemini-2.0-flash model)
 - **Rich text formatting** - headings, bold, italic, lists
 - **Context-aware responses** tailored to specific conditions
@@ -46,14 +46,14 @@ A modern, beautifully designed React application for discovering natural Ayurved
 - **Educational guidance** on herbs, diet, prevention, and lifestyle
 - **Persistent chat history** saved to cloud
 
-### 📱 User Experience
+###  User Experience
 - **Smooth animations** using CSS transitions and keyframes
 - **Loading states** and feedback throughout
 - **Accessibility features** including ARIA labels and keyboard navigation
 - **Cloud storage** for favorites and chat history
 - **Modal dialogs** with detailed condition information
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js 16+ and npm installed
@@ -95,7 +95,7 @@ npm run build
 
 The optimized production build will be in the `dist` folder.
 
-## 🔥 Firebase Configuration
+##  Firebase Configuration
 
 This app uses Firebase for:
 - **Authentication**: User signup/login/logout
@@ -108,7 +108,7 @@ Configuration is in `src/services/firebase.js`. See `FIREBASE_INTEGRATION.md` fo
 - Consider moving API keys to environment variables
 - Enable email verification for new users
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 frontend/
@@ -161,7 +161,7 @@ frontend/
 └── README.md               # This file
 ```
 
-## 🔑 Key Dependencies
+##  Key Dependencies
 
 ```json
 {
@@ -178,7 +178,7 @@ frontend/
 - **Google Generative AI**: Gemini AI model integration
 - **Vite**: Fast build tool and dev server
 
-## 🎨 Design System
+##  Design System
 
 ### Color Palette
 
@@ -187,12 +187,12 @@ The application uses a carefully crafted color system:
 - **Primary**: Emerald Green (#10b981) - Represents nature and healing
 - **Backgrounds**: Deep navy blues for comfortable viewing
 - **Category Colors**:
-  - 🌬️ Respiratory: Cyan (#06b6d4)
-  - 🍃 Digestive: Amber (#f59e0b)
-  - 🧘 Mental: Purple (#8b5cf6)
-  - ✨ Skin: Pink (#ec4899)
-  - 🦴 Musculoskeletal: Indigo (#6366f1)
-  - 💊 Chronic: Red (#ef4444)
+  -  Respiratory: Cyan (#06b6d4)
+  -  Digestive: Amber (#f59e0b)
+  -  Mental: Purple (#8b5cf6)
+  -  Skin: Pink (#ec4899)
+  -  Musculoskeletal: Indigo (#6366f1)
+  -  Chronic: Red (#ef4444)
 
 ### Typography
 - **System fonts** for optimal performance and native look
@@ -205,7 +205,7 @@ The application uses a carefully crafted color system:
 - Hover effects with transform and shadow changes
 - Pulsing indicators for active states
 
-## 🧩 Key Components
+##  Key Components
 
 ### Authentication Pages
 - **Login**: Email/password with Firebase, error handling, "Remember me"
@@ -251,7 +251,7 @@ The application uses a carefully crafted color system:
 - Message history with timestamps
 - Context-aware responses
 
-## 💡 Usage Examples
+##  Usage Examples
 
 ### Browsing Remedies
 1. Browse all conditions on the homepage
@@ -270,7 +270,7 @@ The application uses a carefully crafted color system:
 3. Type questions or use quick question buttons
 4. Get personalized Ayurvedic guidance
 
-## 🔒 Disclaimer
+##  Disclaimer
 
 **Important**: This application provides educational information about Ayurvedic remedies and should not be considered medical advice. Always consult with qualified healthcare practitioners before:
 - Starting any new treatment
@@ -278,7 +278,7 @@ The application uses a carefully crafted color system:
 - Using herbal supplements
 - Managing serious or chronic conditions
 
-## 🛠️ Technologies Used
+##  Technologies Used
 
 - **React 18.3.1** - UI library
 - **Vite 5.4.0** - Build tool and dev server
@@ -286,7 +286,7 @@ The application uses a carefully crafted color system:
 - **LocalStorage API** - Favorites persistence
 - **ES6+** - Modern JavaScript features
 
-## 📈 Future Enhancements
+##  Future Enhancements
 
 - [ ] User authentication and profiles
 - [ ] Personalized remedy recommendations
@@ -298,19 +298,19 @@ The application uses a carefully crafted color system:
 - [ ] Practitioner directory
 - [ ] Health tracking features
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License.
 
-## 👨‍💻 Author
+##  Author
 
 Created with ❤️ for natural wellness enthusiasts
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Ayurvedic wisdom and traditional knowledge
 - React and Vite communities
