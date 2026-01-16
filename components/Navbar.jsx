@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import '../styles/Navbar.css'
 
-export default function Navbar({ user, onLogout, favoritesCount }) {
+export default function Navbar({ user, onLogout, favoritesCount, onOpenAIChat }) {
   const [showMenu, setShowMenu] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -47,6 +47,15 @@ export default function Navbar({ user, onLogout, favoritesCount }) {
         <div className="navbar-actions">
           {isAuthenticated ? (
             <>
+              <button 
+                onClick={onOpenAIChat} 
+                className="navbar-ai-btn"
+                title="Open AI Assistant"
+                aria-label="Open AI Assistant"
+              >
+                <span className="navbar-ai-icon">🤖</span>
+                <span className="navbar-ai-text">AI Assistant</span>
+              </button>
               <div className="navbar-user">
                 <span className="navbar-user-avatar">
                   {user?.name?.charAt(0).toUpperCase() || 'U'}

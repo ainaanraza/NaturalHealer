@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { diseases } from '../data/diseases';
 import { useFavorites } from '../hooks/useFavorites';
 import Navbar from './Navbar';
@@ -8,7 +8,7 @@ import DiseaseCard from './DiseaseCard';
 import DiseaseModal from './DiseaseModal';
 import '../styles/Homepage.css';
 
-const Homepage = ({ user, onLogout }) => {
+const Homepage = ({ user, onLogout, onOpenAIChat }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDisease, setSelectedDisease] = useState(null);
@@ -54,6 +54,7 @@ const Homepage = ({ user, onLogout }) => {
         user={user}
         onLogout={onLogout}
         favoritesCount={favorites.length}
+        onOpenAIChat={onOpenAIChat}
       />
 
       <div className="homepage-hero">
@@ -63,7 +64,7 @@ const Homepage = ({ user, onLogout }) => {
         </div>
         <div className="homepage-hero-content">
           <h1 className="homepage-hero-title">
-            Welcome back, <span className="user-name">{user?.name || 'Healer'}</span>! 🌿
+            Welcome back, <span className="user-name">{user?.displayName || user?.name || 'Healer'}</span>! 🌿
           </h1>
           <p className="homepage-hero-subtitle">
             Explore natural remedies and holistic healing solutions for common health conditions
@@ -74,8 +75,8 @@ const Homepage = ({ user, onLogout }) => {
       <div className="homepage-content">
         <div className="homepage-filters">
           <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            activeCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
           />
           <SearchBar
             searchQuery={searchQuery}
@@ -151,8 +152,8 @@ const Homepage = ({ user, onLogout }) => {
                   key={disease.id}
                   disease={disease}
                   isFavorite={isFavorite(disease.id)}
-                  onToggleFavorite={() => toggleFavorite(disease.id)}
-                  onClick={() => handleCardClick(disease)}
+                  onToggleFavorite={toggleFavorite}
+                  onSelect={handleCardClick}
                 />
               ))}
             </div>
