@@ -40,7 +40,7 @@ export async function generateAIResponse(userMessage, conversationHistory = [], 
     console.log('API Key length:', API_KEY?.length);
     
     // Use Gemini 2.0 Flash for fast, high-quality responses
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     
     console.log('Model created successfully');
 
