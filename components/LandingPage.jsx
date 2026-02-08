@@ -35,12 +35,7 @@ export default function LandingPage() {
           
           <div className="landing-hero-actions">
             <button className="landing-cta-primary" onClick={() => navigate('/signup')}>
-              <span>Get Started Free</span>
-              <span className="landing-cta-icon">→</span>
-            </button>
-            <button className="landing-cta-secondary">
-              <span className="landing-play-icon">▶</span>
-              <span>Watch Demo</span>
+              <span>Get Started</span>
             </button>
           </div>
           
@@ -414,8 +409,7 @@ export default function LandingPage() {
               </p>
               <div className="landing-cta-actions">
                 <button className="landing-cta-primary large" onClick={() => navigate('/signup')}>
-                  Get Started Free
-                  <span className="landing-cta-icon">→</span>
+                  Get Started
                 </button>
                 <p className="landing-cta-note">No credit card required • 7-day free trial</p>
               </div>
