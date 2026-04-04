@@ -14,9 +14,6 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
-/**
- * Create a new chat session
- */
 export const createChatSession = async (userId, title = 'New Chat') => {
   try {
     console.log('Creating chat session for userId:', userId, 'with title:', title);
@@ -41,16 +38,12 @@ export const createChatSession = async (userId, title = 'New Chat') => {
   }
 };
 
-/**
- * Save a message pair (user question + AI answer) to a session
- */
 export const saveMessagePair = async (userId, sessionId, userMessage, aiResponse) => {
   try {
     console.log('Saving message pair to session:', sessionId);
     console.log('User message:', userMessage.substring(0, 50));
     console.log('AI response:', aiResponse.substring(0, 50));
     
-    // Add message to messages subcollection
     await addDoc(collection(db, 'Users', userId, 'Chats', sessionId, 'messages'), {
       userMessage,
       aiResponse,
@@ -59,7 +52,6 @@ export const saveMessagePair = async (userId, sessionId, userMessage, aiResponse
 
     console.log('Message added to subcollection');
     
-    // Update session's updatedAt and messageCount
     const sessionRef = doc(db, 'Users', userId, 'Chats', sessionId);
     const sessionDoc = await getDoc(sessionRef);
     
@@ -77,7 +69,6 @@ export const saveMessagePair = async (userId, sessionId, userMessage, aiResponse
     await updateDoc(sessionRef, {
       updatedAt: serverTimestamp(),
       messageCount: currentCount + 1,
-      // Update title based on first message if it's still "New Chat"
       ...(currentCount === 0 && { 
         title: userMessage.substring(0, 50) + (userMessage.length > 50 ? '...' : '')
       })
@@ -95,9 +86,6 @@ export const saveMessagePair = async (userId, sessionId, userMessage, aiResponse
   }
 };
 
-/**
- * Get all chat sessions for a user
- */
 export const getUserChatSessions = async (userId) => {
   try {
     const q = query(
@@ -132,9 +120,6 @@ export const getUserChatSessions = async (userId) => {
   }
 };
 
-/**
- * Get all messages from a specific chat session
- */
 export const getChatSessionMessages = async (userId, sessionId) => {
   try {
     const q = query(
@@ -168,14 +153,8 @@ export const getChatSessionMessages = async (userId, sessionId) => {
   }
 };
 
-/**
- * Delete a chat session and all its messages
- */
 export const deleteChatSession = async (userId, sessionId) => {
   try {
-    // Note: In a production app, you'd want to use a Cloud Function to delete
-    // the subcollection messages as well. For now, we'll just delete the session doc.
-    // The messages will remain but be inaccessible.
     const sessionRef = doc(db, 'Users', userId, 'Chats', sessionId);
     await deleteDoc(sessionRef);
 
@@ -189,9 +168,6 @@ export const deleteChatSession = async (userId, sessionId) => {
   }
 };
 
-/**
- * Update chat session title
- */
 export const updateChatSessionTitle = async (userId, sessionId, newTitle) => {
   try {
     const sessionRef = doc(db, 'Users', userId, 'Chats', sessionId);

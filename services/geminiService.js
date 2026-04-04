@@ -1,10 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize the Gemini API
-const API_KEY = 'AIzaSyCuGmgpF5_GARi9K5EnJdu_sk4Mubi62pQ';
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-// Ayurvedic Expert System Prompt
 const SYSTEM_PROMPT = `You are an expert Ayurvedic practitioner and natural healing specialist with deep knowledge of traditional medicine, herbal remedies, and holistic wellness. Your role is to:
 
 1. Provide evidence-based natural healing advice rooted in Ayurvedic principles
@@ -25,29 +23,19 @@ Guidelines:
 
 Your tone should be warm, knowledgeable, and empowering - helping users take charge of their health naturally.`;
 
-/**
- * Generate AI response for health-related queries
- * @param {string} userMessage - The user's question or symptom description
- * @param {Array} conversationHistory - Previous messages for context
- * @param {Object} diseaseContext - Optional context about the current disease being discussed
- * @returns {Promise<string>} - AI-generated response
- */
 export async function generateAIResponse(userMessage, conversationHistory = [], diseaseContext = null) {
   try {
     console.log('🤖 Generating AI response...');
     console.log('User message:', userMessage);
     console.log('API Key present:', !!API_KEY);
     console.log('API Key length:', API_KEY?.length);
-    
-    // Use Gemini 2.0 Flash for fast, high-quality responses
+
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     
     console.log('Model created successfully');
 
-    // Build context from conversation history
     let contextualPrompt = SYSTEM_PROMPT + '\n\n';
     
-    // Add disease context if available
     if (diseaseContext) {
       contextualPrompt += `Current Context: The user is inquiring about "${diseaseContext.title}".\n`;
       contextualPrompt += `Description: ${diseaseContext.description}\n`;
@@ -56,7 +44,6 @@ export async function generateAIResponse(userMessage, conversationHistory = [], 
       }
     }
 
-    // Add conversation history (last 5 messages for context)
     if (conversationHistory.length > 0) {
       contextualPrompt += 'Recent Conversation:\n';
       const recentHistory = conversationHistory.slice(-5);
@@ -68,13 +55,11 @@ export async function generateAIResponse(userMessage, conversationHistory = [], 
       contextualPrompt += '\n';
     }
 
-    // Add current user message
     contextualPrompt += `User Question: ${userMessage}\n\n`;
     contextualPrompt += 'Please provide a helpful, natural healing-focused response:';
 
     console.log('Sending request to Gemini API...');
     
-    // Generate response
     const result = await model.generateContent(contextualPrompt);
     
     console.log('Got result from API');
@@ -95,7 +80,6 @@ export async function generateAIResponse(userMessage, conversationHistory = [], 
       cause: error.cause
     });
     
-    // Provide user-friendly error messages
     if (error.status === 404 || error.message?.includes('not found') || error.message?.includes('not supported')) {
       throw new Error('API service not available. Please ensure the Gemini API is enabled in your Google Cloud Console and the API key has the correct permissions.');
     } else if (error.status === 403 || error.message?.includes('API key') || error.message?.includes('API_KEY') || error.message?.includes('API_NOT_FOUND')) {
@@ -114,11 +98,6 @@ export async function generateAIResponse(userMessage, conversationHistory = [], 
   }
 }
 
-/**
- * Generate quick remedy suggestions for a specific condition
- * @param {Object} disease - The disease object with title and symptoms
- * @returns {Promise<string>} - Quick remedy suggestions
- */
 export async function generateQuickRemedies(disease) {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
@@ -143,36 +122,20 @@ Keep it concise, actionable, and safe. Format as a numbered list.`;
   }
 }
 
-/**
- * Validate and sanitize user input
- * @param {string} input - User input to validate
- * @returns {boolean} - Whether input is valid
- */
 export function validateUserInput(input) {
   if (!input || typeof input !== 'string') return false;
   
-  // Check minimum length
   if (input.trim().length < 2) return false;
   
-  // Check maximum length (prevent abuse)
   if (input.length > 1000) return false;
   
   return true;
 }
 
-/**
- * Check if API is properly configured
- * @returns {boolean} - Whether API key is set
- */
 export function isAPIConfigured() {
   return !!API_KEY && API_KEY.length > 20;
 }
 
-/**
- * Get suggested follow-up questions based on context
- * @param {Object} diseaseContext - Current disease context
- * @returns {Array<string>} - Array of suggested questions
- */
 export function getSuggestedQuestions(diseaseContext) {
   const baseQuestions = [
     "What are the best natural remedies?",
