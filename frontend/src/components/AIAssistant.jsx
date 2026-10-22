@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
-import { generateAIResponse, validateUserInput, getSuggestedQuestions } from '../services/geminiService'
+import { validateUserInput, getSuggestedQuestions } from '../services/geminiService'
+import { streamChat } from '../services/api'
 import ChatThread from './ChatThread'
 import '../styles/AIAssistant.css'
 
@@ -27,29 +28,31 @@ export default function AIAssistant({ disease }) {
     }
 
     setError(null)
-    setMessages(prev => [...prev, { role: 'user', text: trimmedInput, timestamp: new Date() }])
+    // Condition-scoped chats are not saved, so the recent turns travel with the request
+    const history = messages.slice(1).filter(m => !m.isError && m.text).map(m => ({ role: m.role, text: m.text }))
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', text: trimmedInput, timestamp: new Date() },
+      { role: 'assistant', text: '', timestamp: new Date(), streaming: true },
+    ])
     setInput('')
     setIsTyping(true)
 
-    try {
-      const aiResponseText = await generateAIResponse(
-        trimmedInput,
-        messages,
-        {
-          title: disease.title,
-          description: disease.desc
-        }
-      )
+    const patchAnswer = (fn) => setMessages(prev => {
+      const next = prev.slice()
+      next[next.length - 1] = { ...next[next.length - 1], ...fn(next[next.length - 1]) }
+      return next
+    })
 
-      setMessages(prev => [...prev, { role: 'assistant', text: aiResponseText, timestamp: new Date() }])
+    try {
+      await streamChat({ message: trimmedInput, conditionId: disease.id, ephemeral: true, history }, (event) => {
+        if (event.type === 'meta' && event.triage !== 'none') patchAnswer(() => ({ triage: event.triage }))
+        if (event.type === 'delta') patchAnswer(m => ({ text: m.text + event.text }))
+      })
+      patchAnswer(() => ({ streaming: false }))
     } catch (err) {
       console.error('AI Response Error:', err)
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        text: `${err.message} Please try again in a moment.`,
-        timestamp: new Date(),
-        isError: true
-      }])
+      patchAnswer(m => ({ streaming: false, isError: !m.text, text: m.text || err.message }))
     } finally {
       setIsTyping(false)
       inputRef.current?.focus()

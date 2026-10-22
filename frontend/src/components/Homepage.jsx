@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { api } from '../services/api';
 import { diseases } from '../data/diseases';
 import { beds, bedFor, ingredientsFor } from '../data/kitchen';
 import { useFavorites } from '../hooks/useFavorites';
@@ -29,7 +31,14 @@ const Homepage = ({ user, onLogout, onOpenAIChat }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDisease, setSelectedDisease] = useState(null);
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites(user);
+  const [prakriti, setPrakriti] = useState(undefined);
+
+  useEffect(() => {
+    api('/profile')
+      .then(({ profile }) => setPrakriti(profile.prakriti || null))
+      .catch(() => setPrakriti(null));
+  }, [user?.uid]);
 
   const filteredDiseases = useMemo(() => {
     let filtered = diseases;
@@ -85,6 +94,17 @@ const Homepage = ({ user, onLogout, onOpenAIChat }) => {
             <div className="dashboard-search">
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
             </div>
+            {prakriti !== undefined && (
+              <Link to="/prakriti" className="prakriti-chip">
+                <Icon name={prakriti ? 'pulse' : 'leaf'} size={16} />
+                {prakriti ? (
+                  <span>Your prakriti: <strong>{prakriti.label}</strong></span>
+                ) : (
+                  <span>Find your prakriti <span className="prakriti-chip-meta">· 12 questions, 2 minutes</span></span>
+                )}
+                <Icon name="arrowRight" size={14} />
+              </Link>
+            )}
           </div>
           <div className="dashboard-vanya">
             <div className="dashboard-vanya-arch" aria-hidden="true"><Vaidya size={176} /></div>

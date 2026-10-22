@@ -1,11 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { generateAIResponse, validateUserInput } from '../services/geminiService'
-import {
-  createChatSession,
-  saveMessagePair,
-  getUserChatSessions,
-  getChatSessionMessages
-} from '../services/chatHistoryService'
+import { validateUserInput } from '../services/geminiService'
+import { streamChat } from '../services/api'
+import { getUserChatSessions, getChatSessionMessages } from '../services/chatHistoryService'
 import ChatThread from './ChatThread'
 import Icon from './Icon'
 import { VaidyaAvatar } from './Vaidya'
@@ -68,13 +64,6 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
     }
   }, [user, isOpen])
 
-  // Create a new session when opening without one
-  useEffect(() => {
-    if (isOpen && user && !currentSessionId) {
-      createNewSession()
-    }
-  }, [isOpen, user])
-
   useEffect(() => {
     if (isOpen && !showHistory) inputRef.current?.focus()
   }, [isOpen, showHistory])
@@ -93,7 +82,7 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
 
   const loadChatSessions = async () => {
     if (!user) return
-    const result = await getUserChatSessions(user.uid)
+    const result = await getUserChatSessions()
     if (result.success) {
       setChatSessions(result.sessions)
     } else {
@@ -101,29 +90,22 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
     }
   }
 
-  const createNewSession = async () => {
-    if (!user) return
-    const result = await createChatSession(user.uid, 'New Chat')
-    if (result.success) {
-      setCurrentSessionId(result.sessionId)
-      setMessages([greetingMessage()])
-      setShowHistory(false)
-      setError(null)
-      loadChatSessions()
-    }
+  // The server creates the conversation with the first message, so a new chat is just a blank slate
+  const createNewSession = () => {
+    setCurrentSessionId(null)
+    setMessages([greetingMessage()])
+    setShowHistory(false)
+    setError(null)
   }
 
   const loadChatSession = async (sessionId) => {
-    const result = await getChatSessionMessages(user.uid, sessionId)
+    const result = await getChatSessionMessages(sessionId)
     if (result.success) {
-      const loadedMessages = [greetingMessage()]
-      result.messages.forEach(msgPair => {
-        loadedMessages.push({ role: 'user', text: msgPair.userMessage, timestamp: msgPair.timestamp })
-        loadedMessages.push({ role: 'assistant', text: msgPair.aiResponse, timestamp: msgPair.timestamp })
-      })
-      setMessages(loadedMessages)
+      setMessages([greetingMessage(), ...result.messages.map(m => ({ role: m.role, text: m.text, triage: m.triage, timestamp: m.timestamp }))])
       setCurrentSessionId(sessionId)
       setShowHistory(false)
+    } else {
+      setError(result.error)
     }
   }
 
@@ -137,39 +119,39 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
     }
 
     setError(null)
-    setMessages(prev => [...prev, { role: 'user', text: trimmedInput, timestamp: new Date() }])
+    const previousSessionId = currentSessionId
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', text: trimmedInput, timestamp: new Date() },
+      { role: 'assistant', text: '', timestamp: new Date(), streaming: true },
+    ])
     setInput('')
     setIsTyping(true)
 
+    // Update the answer bubble (always the last message) as text arrives
+    const patchAnswer = (fn) => setMessages(prev => {
+      const next = prev.slice()
+      next[next.length - 1] = { ...next[next.length - 1], ...fn(next[next.length - 1]) }
+      return next
+    })
+
     try {
-      const aiResponseText = await generateAIResponse(
-        trimmedInput,
-        messages,
-        {
-          title: 'General Wellness',
-          description: 'Natural healing and Ayurvedic guidance'
-        }
-      )
-
-      setMessages(prev => [...prev, { role: 'assistant', text: aiResponseText, timestamp: new Date() }])
-
-      // Save message pair to Firestore
-      if (currentSessionId) {
-        const saveResult = await saveMessagePair(user.uid, currentSessionId, trimmedInput, aiResponseText)
-        if (saveResult.success) {
-          await loadChatSessions()
-        } else {
-          console.error('Failed to save message:', saveResult.error)
-        }
-      }
+      const result = await streamChat({ message: trimmedInput, chatId: currentSessionId }, (event) => {
+        if (event.type === 'meta' && event.chatId) setCurrentSessionId(event.chatId)
+        if (event.type === 'meta' && event.triage !== 'none') patchAnswer(() => ({ triage: event.triage }))
+        if (event.type === 'delta') patchAnswer(m => ({ text: m.text + event.text }))
+      })
+      patchAnswer(() => ({ streaming: false }))
+      if (result.chatId) loadChatSessions()
     } catch (err) {
       console.error('AI Response Error:', err)
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        text: `${err.message} Please try again in a moment.`,
-        timestamp: new Date(),
-        isError: true
-      }])
+      // A failed first message leaves no conversation on the server
+      setCurrentSessionId(previousSessionId)
+      patchAnswer(m => ({
+        streaming: false,
+        isError: !m.text,
+        text: m.text || err.message,
+      }))
     } finally {
       setIsTyping(false)
       inputRef.current?.focus()

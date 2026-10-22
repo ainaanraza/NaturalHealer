@@ -66,6 +66,15 @@ export function formatMessageText(text) {
 
     flushList()
 
+    // "> " lines are callouts, used by the server's safety notices
+    const callout = trimmed.match(/^>\s?(.*)$/)
+    if (callout) {
+      formatted.push(
+        <p key={`c-${index}`} className="msg-callout" dangerouslySetInnerHTML={{ __html: formatInlineStyles(callout[1]) }} />
+      )
+      return
+    }
+
     const heading = trimmed.match(/^(#{1,6})\s*(.+)$/)
     if (heading) {
       formatted.push(

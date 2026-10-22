@@ -23,6 +23,9 @@ export default function ChatThread({
 }) {
   const scrollRef = useRef(null)
   const isIntro = messages.length <= 1 && !isTyping
+  // While an answer streams in, its own bubble replaces the typing dots
+  const last = messages[messages.length - 1]
+  const showTyping = isTyping && !(last?.role === 'assistant' && last.streaming && last.text)
 
   // Keep the newest message in view
   useEffect(() => {
@@ -74,7 +77,7 @@ export default function ChatThread({
           </div>
         ) : (
           <div className="chat-messages" aria-live="polite">
-            {messages.slice(1).map((msg, index) =>
+            {messages.slice(1).filter(msg => msg.text).map((msg, index) =>
               msg.role === 'user' ? (
                 <div key={index} className="msg msg-user" title={timeLabel(msg.timestamp)}>
                   <p className="msg-bubble">{msg.text}</p>
@@ -82,7 +85,7 @@ export default function ChatThread({
               ) : (
                 <div
                   key={index}
-                  className={`msg msg-ai ${msg.isError ? 'msg-error' : ''}`}
+                  className={`msg msg-ai ${msg.isError ? 'msg-error' : ''} ${msg.triage ? `msg-triage-${msg.triage}` : ''} ${msg.streaming ? 'is-streaming' : ''}`}
                   title={timeLabel(msg.timestamp)}
                 >
                   <span className="msg-mark" aria-hidden="true">
@@ -93,7 +96,7 @@ export default function ChatThread({
               )
             )}
 
-            {isTyping && (
+            {showTyping && (
               <div className="msg msg-ai" role="status" aria-label="The assistant is writing">
                 <span className="msg-mark" aria-hidden="true">
                   <VaidyaAvatar size={34} />

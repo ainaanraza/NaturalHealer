@@ -129,3 +129,25 @@
   .dashboard-head { grid-template-columns: 1fr; }
   .dashboard-vanya { display: none; }
 }
+
+.prakriti-chip {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 7px 14px;
+  border-radius: var(--r-full);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  color: var(--leaf-900);
+  font-size: 0.9rem;
+  text-decoration: none;
+  animation: fade-in 500ms ease;
+  transition: border-color 200ms ease;
+}
+
+.prakriti-chip svg:first-child { color: var(--brass-deep); }
+.prakriti-chip strong { font-weight: 700; }
+.prakriti-chip-meta { color: var(--ink-3); }
+.prakriti-chip:hover { border-color: var(--leaf-500); }

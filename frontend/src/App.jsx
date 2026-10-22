@@ -8,6 +8,7 @@ import Login from './components/Login'
 import Signup from './components/Signup'
 import ForgotPassword from './components/ForgotPassword'
 import Homepage from './components/Homepage'
+import Prakriti from './components/Prakriti'
 import FloatingAIChat from './components/FloatingAIChat'
 import { VaidyaAvatar } from './components/Vaidya'
 
@@ -120,6 +121,17 @@ function AppRoutes() {
               <Navigate to="/login" replace />
             )
           } 
+        />
+
+        <Route
+          path="/prakriti"
+          element={
+            isLoading ? sessionPending : isAuthenticated ? (
+              <Prakriti user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         />
 
         {/* Catch all - redirect to landing */}
