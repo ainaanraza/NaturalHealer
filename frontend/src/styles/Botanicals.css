@@ -1,0 +1,50 @@
+/* Botanical ink: strokes draw in, then a pale wash settles */
+
+.plate { overflow: visible; }
+
+.plate .ink-stroke {
+  fill: none;
+  stroke: var(--ink-line, #2F4A33);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 2.6s var(--ease-in-out);
+}
+
+.plate .ink-fine { stroke-width: 0.7; opacity: 0.75; transition-delay: 0.5s; }
+
+.plate .ink-fill {
+  opacity: 0;
+  transition: opacity 1.4s ease 1.4s;
+}
+
+/* Drawn on reveal, or immediately for static marks */
+.is-seen .plate .ink-stroke,
+.plate.is-drawn .ink-stroke,
+.plate.is-inking .ink-stroke { stroke-dashoffset: 0; }
+
+.is-seen .plate .ink-fill,
+.plate.is-drawn .ink-fill,
+.plate.is-inking .ink-fill { opacity: 1; }
+
+.plate.is-drawn .ink-stroke, .plate.is-drawn .ink-fill { transition: none; }
+
+/* Small round frame */
+.herb-mark {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft, var(--leaf-100));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, var(--leaf-700)) 28%, transparent);
+}
+
+.herb-mark .plate { margin-top: 10%; }
+.herb-mark .ink-stroke { stroke-width: 1.8; }
+.herb-mark .ink-fine { stroke-width: 1.1; }

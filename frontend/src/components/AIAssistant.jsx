@@ -1,306 +1,81 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { generateAIResponse, validateUserInput, getSuggestedQuestions } from '../services/geminiService'
+import ChatThread from './ChatThread'
 import '../styles/AIAssistant.css'
 
-// Function to format AI response text with markdown-style formatting
-function formatMessageText(text) {
-  const lines = text.split('\n');
-  const formatted = [];
-  let listItems = [];
-  let listType = null;
-  
-  const flushList = () => {
-    if (listItems.length > 0) {
-      formatted.push(
-        <ul key={`list-${formatted.length}`} className="formatted-list">
-          {listItems.map((item, i) => (
-            <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
-          ))}
-        </ul>
-      );
-      listItems = [];
-      listType = null;
-    }
-  };
-  
-  lines.forEach((line, index) => {
-    const trimmed = line.trim();
-    
-    if (!trimmed) {
-      flushList();
-      formatted.push(<br key={`br-${index}`} />);
-      return;
-    }
-    
-    const bulletMatch = trimmed.match(/^[*\-•]\s+(.+)$/);
-    if (bulletMatch) {
-      if (listType !== 'bullet') flushList();
-      listType = 'bullet';
-      listItems.push(formatInlineStyles(bulletMatch[1]));
-      return;
-    }
-    
-    const numberMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
-    if (numberMatch) {
-      if (listType !== 'number') flushList();
-      listType = 'number';
-      listItems.push(formatInlineStyles(numberMatch[2]));
-      return;
-    }
-    
-    flushList();
-    
-    if (trimmed.startsWith('###')) {
-      formatted.push(
-        <h4 key={`h4-${index}`} className="formatted-heading-3">
-          {formatInlineStyles(trimmed.replace(/^###\s*/, ''))}
-        </h4>
-      );
-    } else if (trimmed.startsWith('##')) {
-      formatted.push(
-        <h3 key={`h3-${index}`} className="formatted-heading-2">
-          {formatInlineStyles(trimmed.replace(/^##\s*/, ''))}
-        </h3>
-      );
-    } else if (trimmed.startsWith('#')) {
-      formatted.push(
-        <h2 key={`h2-${index}`} className="formatted-heading-1">
-          {formatInlineStyles(trimmed.replace(/^#\s*/, ''))}
-        </h2>
-      );
-    } else {
-      formatted.push(
-        <p key={`p-${index}`} dangerouslySetInnerHTML={{ __html: formatInlineStyles(trimmed) }} />
-      );
-    }
-  });
-  
-  flushList();
-  return formatted;
-}
-
-function formatInlineStyles(text) {
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  text = text.replace(/_(.+?)_/g, '<em>$1</em>');
-  text = text.replace(/`(.+?)`/g, '<code>$1</code>');
-  return text;
-}
-
+// Condition-scoped assistant shown inside the remedy detail view
 export default function AIAssistant({ disease }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: `Hello! 🌿 I'm your Ayurvedic wellness assistant powered by AI. I can help answer questions about ${disease.title} and provide natural healing guidance. Feel free to ask about remedies, prevention, diet, lifestyle, or anything else!`,
+      text: `Ask anything about ${disease.title.toLowerCase()}: what to take, when to take it, what to eat and what to avoid.`,
       timestamp: new Date()
     }
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState(null)
-  const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  
-  // Auto-scroll to latest message
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-  
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-  
+
   const handleSend = async () => {
     const trimmedInput = input.trim()
     if (!trimmedInput || isTyping) return
-    
-    // Validate input
+
     if (!validateUserInput(trimmedInput)) {
-      setError('Please enter a valid question (2-1000 characters)');
-      return;
+      setError('Please enter a question between 2 and 1000 characters.')
+      return
     }
-    
-    // Clear any previous errors
-    setError(null);
-    
-    // Add user message
-    const userMessage = {
-      role: 'user',
-      text: trimmedInput,
-      timestamp: new Date()
-    }
-    setMessages(prev => [...prev, userMessage])
+
+    setError(null)
+    setMessages(prev => [...prev, { role: 'user', text: trimmedInput, timestamp: new Date() }])
     setInput('')
-    
-    // Show typing indicator
     setIsTyping(true)
-    
+
     try {
-      // Generate AI response using Gemini API
       const aiResponseText = await generateAIResponse(
         trimmedInput,
         messages,
         {
           title: disease.title,
-          description: disease.description,
-          symptoms: disease.symptoms
+          description: disease.desc
         }
-      );
-      
-      const assistantMessage = {
-        role: 'assistant',
-        text: aiResponseText,
-        timestamp: new Date()
-      }
-      
-      setMessages(prev => [...prev, assistantMessage])
+      )
+
+      setMessages(prev => [...prev, { role: 'assistant', text: aiResponseText, timestamp: new Date() }])
     } catch (err) {
-      console.error('AI Response Error:', err);
-      
-      // Add error message to chat
-      const errorMessage = {
+      console.error('AI Response Error:', err)
+      setMessages(prev => [...prev, {
         role: 'assistant',
-        text: `⚠️ ${err.message}\n\nPlease try rephrasing your question or try again in a moment.`,
+        text: `${err.message} Please try again in a moment.`,
         timestamp: new Date(),
         isError: true
-      }
-      
-      setMessages(prev => [...prev, errorMessage])
-      setError(err.message);
+      }])
     } finally {
       setIsTyping(false)
       inputRef.current?.focus()
     }
   }
-  
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
-  
-  // Get suggested questions based on disease context
-  const quickQuestions = getSuggestedQuestions({
-    title: disease.title,
-    symptoms: disease.symptoms
-  }).map((q, i) => {
-    const emojis = ['💊', '🍽️', '🧘', '⏱️', '🌿'];
-    return `${emojis[i % emojis.length]} ${q}`;
-  }).slice(0, 4);
-  
-  const handleQuickQuestion = (question) => {
-    // Remove emoji and extra spaces
-    const cleanQuestion = question.replace(/^[\p{Emoji}\s]+/u, '').trim();
-    setInput(cleanQuestion);
-    inputRef.current?.focus();
-  }
-  
+
+  const suggestions = getSuggestedQuestions({ title: disease.title }).slice(0, 3)
+
   return (
-    <div className="ai-assistant">
-      <div className="ai-assistant-header">
-        <div className="ai-assistant-avatar">
-          <div className="ai-assistant-avatar-icon">🤖</div>
-          <div className="ai-assistant-status"></div>
-        </div>
-        <div className="ai-assistant-info">
-          <h3 className="ai-assistant-title">AI Wellness Assistant</h3>
-          <p className="ai-assistant-subtitle">Powered by Ayurvedic Knowledge</p>
-        </div>
-      </div>
-      
-      <div className="ai-assistant-messages">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`ai-message ${msg.role === 'user' ? 'user' : 'assistant'} ${msg.isError ? 'error' : ''}`}
-          >
-            <div className="ai-message-content">
-              <div className="ai-message-text">
-                {msg.role === 'assistant' ? (
-                  formatMessageText(msg.text)
-                ) : (
-                  msg.text.split('\n').map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}
-                      {i < msg.text.split('\n').length - 1 && <br />}
-                    </React.Fragment>
-                  ))
-                )}
-              </div>
-              <div className="ai-message-time">
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        {isTyping && (
-          <div className="ai-message assistant">
-            <div className="ai-message-content">
-              <div className="ai-typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {messages.length === 1 && (
-        <div className="ai-quick-questions">
-          <div className="ai-quick-label">Quick questions:</div>
-          <div className="ai-quick-grid">
-            {quickQuestions.map((q, i) => (
-              <button
-                key={i}
-                className="ai-quick-btn"
-                onClick={() => handleQuickQuestion(q)}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      <div className="ai-assistant-input">
-        {error && <div className="ai-input-error">⚠️ {error}</div>}
-        <div className="ai-input-wrapper">
-          <input
-            ref={inputRef}
-            type="text"
-            className="ai-input-field"
-            placeholder="Ask about remedies, diet, prevention..."
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
-              if (error) setError(null);
-            }}
-            onKeyPress={handleKeyPress}
-            disabled={isTyping}
-            maxLength={1000}
-          />
-          <button
-            className="ai-send-btn"
-            onClick={handleSend}
-            disabled={!input.trim() || isTyping}
-            aria-label="Send message"
-            title={isTyping ? 'AI is typing...' : 'Send message'}
-          >
-            {isTyping ? (
-              <div className="ai-send-spinner"></div>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+    <section className="ai-assistant" aria-label={`AI guide for ${disease.title}`}>
+      <ChatThread
+        compact
+        messages={messages}
+        isTyping={isTyping}
+        error={error}
+        input={input}
+        onInputChange={(value) => {
+          setInput(value)
+          if (error) setError(null)
+        }}
+        onSend={handleSend}
+        suggestions={suggestions}
+        introTitle="Have a question?"
+        placeholder={`Ask about ${disease.title.toLowerCase()}…`}
+        inputRef={inputRef}
+      />
+    </section>
   )
 }

@@ -1,151 +1,138 @@
-import React, { useEffect } from 'react'
-import { theme } from '../theme'
+import React, { useEffect, useRef, useState } from 'react'
+import Icon from './Icon'
 import AIAssistant from './AIAssistant'
+import BotanicalPlate from './Botanicals'
+import { Mandala } from './Garden'
+import { SaveButton, ShelfTags, severityLabels } from './ConditionLedger'
+import { bedFor } from '../data/kitchen'
 import '../styles/DiseaseModal.css'
 
+const EXIT_MS = 180
+
 export default function DiseaseModal({ disease, onClose, isFavorite, onToggleFavorite }) {
-  const categoryColor = theme.colors[disease.category] || theme.colors.wellness
-  
-  // Prevent body scroll when modal is open
+  const [closing, setClosing] = useState(false)
+  const closeRef = useRef(null)
+  const bed = bedFor(disease.category)
+
+  // Play the exit before unmounting; exits are quicker than entrances
+  const requestClose = () => {
+    if (closing) return
+    setClosing(true)
+    setTimeout(onClose, EXIT_MS)
+  }
+
+  // Lock page scroll and return focus to where it was
   useEffect(() => {
+    const previous = document.activeElement
     document.body.style.overflow = 'hidden'
+    closeRef.current?.focus()
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = ''
+      previous?.focus?.()
     }
   }, [])
-  
-  // Close on Escape key
+
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') requestClose()
     }
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
-  }, [onClose])
-  
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose()
-    }
-  }
-  
+  })
+
   return (
-    <div className="modal-backdrop" onClick={handleBackdropClick} role="dialog" aria-modal="true">
-      <div className="modal-container">
-        {/* Header */}
-        <div 
-          className="modal-header"
-          style={{
-            background: `linear-gradient(135deg, ${categoryColor.primary}22 0%, transparent 100%)`
-          }}
-        >
-          <div className="modal-header-content">
-            <div className="modal-icon-wrapper" style={{ background: categoryColor.gradient }}>
-              <span className="modal-icon">{disease.icon}</span>
+    <div className="dmodal-root" data-state={closing ? 'closing' : 'open'}>
+      <div className="dmodal-scrim" onClick={requestClose} aria-hidden="true" />
+
+      <div className="dmodal" role="dialog" aria-modal="true" aria-labelledby="dmodal-title" data-category={disease.category}>
+        <article className="thali">
+          <header className="thali-head">
+            <Mandala size={300} className="thali-mandala" color="#C9733B" />
+            <div className="thali-sprite" aria-hidden="true">
+              <BotanicalPlate herb={bed.herb} size={120} drawn />
             </div>
-            <div className="modal-title-section">
-              <h2 className="modal-title">{disease.title}</h2>
-              <p className="modal-subtitle">{disease.desc}</p>
-            </div>
-          </div>
-          
-          <div className="modal-header-actions">
-            <button
-              className={`modal-favorite-btn ${isFavorite ? 'active' : ''}`}
-              onClick={() => onToggleFavorite(disease.id)}
-              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-            >
-              {isFavorite ? '❤️' : '🤍'}
-            </button>
-            <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-              ✕
-            </button>
-          </div>
-        </div>
-        
-        {/* Body */}
-        <div className="modal-body">
-          <div className="modal-content">
-            {/* Info Cards */}
-            <div className="modal-info-grid">
-              <div className="modal-info-card">
-                <div className="modal-info-icon">⏱️</div>
-                <div className="modal-info-content">
-                  <div className="modal-info-label">Duration</div>
-                  <div className="modal-info-value">{disease.duration}</div>
-                </div>
-              </div>
-              
-              <div className="modal-info-card">
-                <div className="modal-info-icon">🔬</div>
-                <div className="modal-info-content">
-                  <div className="modal-info-label">Dosha</div>
-                  <div className="modal-info-value">{disease.doshas.join(', ')}</div>
-                </div>
-              </div>
-              
-              <div className="modal-info-card">
-                <div className="modal-info-icon">📊</div>
-                <div className="modal-info-content">
-                  <div className="modal-info-label">Severity</div>
-                  <div className="modal-info-value">{disease.severity}</div>
-                </div>
+            <div className="thali-toolbar">
+              <span className="thali-katori">
+                <span className="thali-bed">{bed.label}</span>
+                <span className="thali-spice"><em>{bed.latin}</em> · {bed.herbName} <span className="hi" lang="hi">{bed.hindi}</span></span>
+              </span>
+              <div className="thali-actions">
+                <SaveButton saved={isFavorite} onToggle={onToggleFavorite} label={disease.title} />
+                <button ref={closeRef} className="icon-btn" onClick={requestClose} aria-label="Close">
+                  <Icon name="x" />
+                </button>
               </div>
             </div>
-            
-            {/* Remedies */}
-            <section className="modal-section">
-              <div className="modal-section-header">
-                <h3 className="modal-section-title">
-                  <span className="modal-section-icon">🌿</span>
-                  Natural Remedies
-                </h3>
+
+            <h2 id="dmodal-title" className="t-title thali-title">{disease.title}</h2>
+            <p className="thali-desc">{disease.desc}</p>
+
+            <dl className="thali-facts">
+              <div>
+                <dt>Usually lasts</dt>
+                <dd>{disease.duration}</dd>
               </div>
-              <ul className="modal-remedy-list">
-                {disease.remedies.map((remedy, index) => (
-                  <li key={index} className="modal-remedy-item">
-                    <span className="modal-remedy-bullet" style={{ background: categoryColor.gradient }}>
-                      {index + 1}
-                    </span>
-                    <span className="modal-remedy-text">{remedy}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            
-            {/* Prevention */}
-            <section className="modal-section">
-              <div className="modal-section-header">
-                <h3 className="modal-section-title">
-                  <span className="modal-section-icon">🛡️</span>
-                  Prevention Tips
-                </h3>
+              <div>
+                <dt>Dosha</dt>
+                <dd className="thali-doshas">{disease.doshas.join(', ')}</dd>
               </div>
-              <div className="modal-prevention-grid">
-                {disease.prevention.map((tip, index) => (
-                  <div key={index} className="modal-prevention-card">
-                    <div className="modal-prevention-icon">✓</div>
-                    <p className="modal-prevention-text">{tip}</p>
-                  </div>
-                ))}
+              <div>
+                <dt>Severity</dt>
+                <dd className={disease.severity === 'serious' ? 'is-serious' : undefined}>
+                  {severityLabels[disease.severity]}
+                </dd>
               </div>
-            </section>
-            
-            {/* Disclaimer */}
-            <div className="modal-disclaimer">
-              <span className="modal-disclaimer-icon">ℹ️</span>
-              <p>
-                This information is for educational purposes only and does not replace professional medical advice. 
-                Always consult with a qualified healthcare practitioner before starting any new treatment.
-              </p>
-            </div>
-          </div>
-          
-          {/* AI Assistant */}
-          <div className="modal-sidebar">
-            <AIAssistant disease={disease} />
-          </div>
-        </div>
+            </dl>
+          </header>
+
+          {disease.severity === 'serious' && (
+            <p className="notice notice-chilli thali-warning">
+              <Icon name="alert" size={18} />
+              <span>
+                {disease.title} needs a doctor's ongoing care. Use these remedies alongside your
+                prescribed treatment, never instead of it, and tell your doctor what you take.
+              </span>
+            </p>
+          )}
+
+          <section className="thali-section">
+            <h3 className="thali-section-title">From your shelf</h3>
+            <ShelfTags disease={disease} limit={20} />
+          </section>
+
+          <section className="thali-section">
+            <h3 className="thali-section-title">What to make</h3>
+            <ol className="thali-remedies">
+              {disease.remedies.map((remedy, index) => (
+                <li key={remedy}>
+                  <span className="thali-num">{index + 1}</span>
+                  <span>{remedy}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="thali-section">
+            <h3 className="thali-section-title">To keep it away</h3>
+            <ul className="thali-prevention">
+              {disease.prevention.map(tip => (
+                <li key={tip}>
+                  <Icon name="check" size={16} strokeWidth={2.5} />
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <p className="thali-fineprint">
+            Educational information, not medical advice. Check with a qualified practitioner before
+            starting a new remedy, especially if you are pregnant, nursing or on medication.
+          </p>
+        </article>
+
+        <aside className="dmodal-ai">
+          <AIAssistant disease={disease} />
+        </aside>
       </div>
     </div>
   )

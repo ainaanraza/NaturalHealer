@@ -1,0 +1,40 @@
+/* Ornaments: mandala and vine rule */
+
+.mandala { pointer-events: none; }
+
+/* --------------------------------------------------------------------------
+   Vine rule: draws on reveal
+   -------------------------------------------------------------------------- */
+
+.vine {
+  width: 100%;
+  max-width: var(--page-max);
+  height: 40px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.vine svg { width: 100%; height: 100%; overflow: visible; }
+
+.vine-stem {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 2.6s var(--ease-in-out);
+}
+
+.vine-leaf, .vine-flower {
+  opacity: 0;
+  transition: opacity 800ms ease;
+  transition-delay: calc(600ms + var(--i, 2) * 300ms);
+}
+
+.vine.is-seen .vine-stem { stroke-dashoffset: 0; }
+.vine.is-seen .vine-leaf, .vine.is-seen .vine-flower { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vine-stem { stroke-dashoffset: 0; }
+  .vine-leaf, .vine-flower { opacity: 1; }
+  .mandala { animation: none !important; }
+}

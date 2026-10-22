@@ -1,0 +1,272 @@
+/* The ledger: ailments as leaf-edged cards, each tended by its herb spirit */
+
+.ledger {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.ledger-row {
+  border-radius: var(--r-lg);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  transition: border-color 250ms ease, box-shadow 300ms ease;
+}
+
+.ledger-row.is-open {
+  border-color: var(--accent);
+  box-shadow: 0 18px 36px -22px var(--accent);
+}
+
+/* Entrance stagger on the landing ledger only; the dashboard filters instantly */
+.ledger-staggered .ledger-row {
+  animation: rise 500ms var(--ease-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+.ledger-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 18px;
+  align-items: start;
+  width: 100%;
+  padding: 18px 18px 18px 16px;
+  border: none;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.ledger-head .herb-mark { margin-top: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .ledger-row:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); box-shadow: var(--drop-1); }
+}
+
+.ledger-main { display: grid; gap: 3px; min-width: 0; }
+
+.ledger-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1.1;
+  color: var(--leaf-900);
+}
+
+.ledger-desc { color: var(--ink-2); font-size: 1rem; }
+
+.shelf-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  list-style: none;
+}
+
+.shelf-more {
+  align-self: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.ledger-meta {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  padding-top: 4px;
+  text-align: right;
+  font-size: 0.9375rem;
+}
+
+.severity {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: var(--leaf-100);
+  color: var(--leaf-800);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.severity-moderate { background: var(--haldi-soft); color: #7A5206; }
+.severity-serious { background: #FCE6DF; color: var(--chilli-text); }
+
+.ledger-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+
+.ledger-toggle {
+  display: block;
+  box-sizing: content-box;
+  margin-top: 2px;
+  padding: 8px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  transition: transform 300ms var(--ease-out), background-color 200ms ease, color 200ms ease;
+}
+
+.ledger-row.is-open .ledger-toggle { transform: rotate(135deg); background: var(--accent); color: #FFFDF5; }
+
+/* Static rows (dashboard) open the full remedy; the save button floats above */
+.ledger-head-static { cursor: pointer; }
+
+.ledger-open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 0;
+  border: none;
+  border-radius: inherit;
+  background: none;
+}
+
+.ledger-open:focus-visible { outline-offset: -3px; }
+
+.ledger-head-static > *:not(.ledger-open) { position: relative; z-index: 1; pointer-events: none; }
+.ledger-head-static > .save-btn { pointer-events: auto; }
+
+/* Save (heart) */
+.save-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-3);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms var(--ease-spring), background-color 180ms ease, color 180ms ease;
+}
+
+.save-btn:active { transform: scale(0.82); }
+
+@media (hover: hover) and (pointer: fine) {
+  .save-btn:hover { background: #FCE9E4; color: var(--chilli); }
+}
+
+.save-btn.is-saved { color: #D9433A; }
+.save-btn.is-saved svg { fill: currentColor; animation: heart-pop 450ms var(--ease-spring); }
+
+@keyframes heart-pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Inline remedy panel ---------- */
+
+.ledger-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 220ms var(--ease-out), opacity 160ms ease;
+}
+
+.ledger-collapse[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: grid-template-rows 380ms var(--ease-expo), opacity 260ms ease 60ms;
+}
+
+.ledger-collapse-inner { min-height: 0; overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-collapse,
+  .ledger-collapse[data-open="true"] { transition: opacity 120ms ease; }
+}
+
+.ledger-panel {
+  display: grid;
+  gap: 22px;
+  justify-items: start;
+  margin: 0 16px 18px 86px;
+  padding: 22px 24px;
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+}
+
+.ledger-panel-cols {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+  width: 100%;
+}
+
+.ledger-panel-title {
+  margin-bottom: 10px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ledger-remedies {
+  display: grid;
+  gap: 8px;
+  padding-left: 22px;
+  color: var(--ink);
+}
+
+.ledger-remedies li::marker { color: var(--accent); font-weight: 800; }
+
+.ledger-prevention {
+  display: grid;
+  gap: 8px;
+  padding-left: 0;
+  list-style: none;
+  color: var(--ink-2);
+}
+
+.ledger-prevention li {
+  position: relative;
+  padding-left: 24px;
+}
+
+.ledger-prevention li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 14px;
+  height: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 10'%3E%3Cpath d='M1 9 C2 3 8 0 13 1 C12 6 7 10 1 9Z' fill='%235E8C4A'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 720px) {
+  .ledger-head { grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; padding: 14px 12px; }
+  .ledger-meta {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    padding-top: 0;
+    text-align: left;
+  }
+  .ledger-head-static .ledger-meta { grid-column: 2 / 3; }
+  .ledger-toggle, .ledger-head-static .save-btn { grid-column: 3; grid-row: 1; }
+  .ledger-title { font-size: 1.4rem; }
+  .ledger-panel { margin: 0 10px 12px; padding: 18px; }
+  .ledger-panel-cols { grid-template-columns: 1fr; gap: 20px; }
+}
