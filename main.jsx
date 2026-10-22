@@ -1,7 +1,8 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
+// Design system first, so component styles can build on it
 import './styles/App.css'
+import App from './App.jsx'
 
 const root = createRoot(document.getElementById('root'))
 root.render(

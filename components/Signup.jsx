@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { signUpUser } from '../services/authService';
-import '../styles/Auth.css';
+import { signUpUser, signInWithGoogle } from '../services/authService';
+import AuthLayout from './AuthLayout';
+import Icon, { GoogleMark } from './Icon';
+
+const strengthLabels = ['', 'Weak', 'Fair', 'Strong'];
+
+function passwordStrength(password) {
+  if (!password) return 0;
+  if (password.length < 6) return 1;
+  return /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password) ? 3 : 2;
+}
 
 const Signup = ({ onSignup, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
@@ -31,271 +40,174 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name) {
       newErrors.name = 'Name is required';
     } else if (formData.name.length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
     }
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions';
+      newErrors.agreeToTerms = 'Please confirm you understand this before continuing';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
     setErrorMessage('');
-    
-    // Use Firebase authentication
+
     const result = await signUpUser(formData.email, formData.password, formData.name);
-    
+
     if (result.success) {
       onSignup(result.user);
     } else {
       setErrorMessage(result.error);
     }
-    
+
     setIsLoading(false);
   };
 
-  const handleSocialSignup = (provider) => {
-    // Social signup can be implemented later with Firebase Auth providers
-    setErrorMessage(`${provider} signup coming soon!`);
+  const handleSocialSignup = async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+
+    const result = await signInWithGoogle();
+
+    if (result.success) {
+      onSignup(result.user);
+    } else {
+      setErrorMessage(result.error);
+    }
+
+    setIsLoading(false);
   };
 
-  return (
-    <div className="auth-page">
-      <div className="auth-background">
-        <div className="auth-gradient-orb orb-1"></div>
-        <div className="auth-gradient-orb orb-2"></div>
-        <div className="auth-gradient-orb orb-3"></div>
-      </div>
+  const strength = passwordStrength(formData.password);
 
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
-            <div className="auth-logo">
-              <span className="auth-logo-icon">🌿</span>
-              <span className="auth-logo-text">Natural Healer</span>
-            </div>
-            <h1 className="auth-title">Create Account</h1>
-            <p className="auth-subtitle">Start your journey to natural wellness</p>
-          </div>
-
-          <form className="auth-form" onSubmit={handleSubmit}>
-            {errorMessage && (
-              <div className="auth-error-banner">
-                <span className="error-icon">⚠️</span>
-                {errorMessage}
-              </div>
-            )}
-            
-            <div className="auth-form-group">
-              <label htmlFor="name" className="auth-label">
-                <span className="label-icon">👤</span>
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className={`auth-input ${errors.name ? 'error' : ''}`}
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {errors.name && <span className="auth-error">{errors.name}</span>}
-            </div>
-
-            <div className="auth-form-group">
-              <label htmlFor="email" className="auth-label">
-                <span className="label-icon">📧</span>
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                className={`auth-input ${errors.email ? 'error' : ''}`}
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {errors.email && <span className="auth-error">{errors.email}</span>}
-            </div>
-
-            <div className="auth-form-group">
-              <label htmlFor="password" className="auth-label">
-                <span className="label-icon">🔒</span>
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                className={`auth-input ${errors.password ? 'error' : ''}`}
-                placeholder="Create a strong password"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {errors.password && <span className="auth-error">{errors.password}</span>}
-              <div className="password-strength">
-                <div className="strength-bar">
-                  <div 
-                    className={`strength-fill ${
-                      formData.password.length === 0 ? '' :
-                      formData.password.length < 6 ? 'weak' :
-                      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password) ? 'strong' : 'medium'
-                    }`}
-                  ></div>
-                </div>
-                <span className="strength-text">
-                  {formData.password.length === 0 ? 'Enter password' :
-                   formData.password.length < 6 ? 'Weak' :
-                   /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password) ? 'Strong' : 'Medium'}
-                </span>
-              </div>
-            </div>
-
-            <div className="auth-form-group">
-              <label htmlFor="confirmPassword" className="auth-label">
-                <span className="label-icon">✓</span>
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                className={`auth-input ${errors.confirmPassword ? 'error' : ''}`}
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {errors.confirmPassword && <span className="auth-error">{errors.confirmPassword}</span>}
-            </div>
-
-            <div className="auth-form-group">
-              <label className={`auth-checkbox ${errors.agreeToTerms ? 'error' : ''}`}>
-                <input
-                  type="checkbox"
-                  name="agreeToTerms"
-                  checked={formData.agreeToTerms}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                />
-                <span className="checkbox-label">
-                  I agree to the{' '}
-                  <a href="#" className="auth-link">Terms of Service</a>
-                  {' '}and{' '}
-                  <a href="#" className="auth-link">Privacy Policy</a>
-                </span>
-              </label>
-              {errors.agreeToTerms && <span className="auth-error">{errors.agreeToTerms}</span>}
-            </div>
-
-            <button
-              type="submit"
-              className="auth-button primary"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Creating account...
-                </>
-              ) : (
-                <>
-                  Create Account
-                  <span className="button-icon">→</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="auth-divider">
-            <span>Or sign up with</span>
-          </div>
-
-          <div className="auth-social">
-            <button
-              className="auth-social-button google"
-              onClick={() => handleSocialSignup('google')}
-              disabled={isLoading}
-            >
-              <span className="social-icon">🔍</span>
-              Google
-            </button>
-          </div>
-
-          <div className="auth-footer">
-            <p className="auth-footer-text">
-              Already have an account?{' '}
-              <button
-                className="auth-link primary"
-                onClick={onSwitchToLogin}
-                disabled={isLoading}
-              >
-                Sign in
-              </button>
-            </p>
-          </div>
-        </div>
-
-        <div className="auth-info">
-          <div className="auth-info-card">
-            <div className="info-icon">🎯</div>
-            <h3 className="info-title">Personalized Care</h3>
-            <p className="info-desc">
-              Get customized natural healing recommendations based on your unique health needs
-            </p>
-          </div>
-          <div className="auth-info-card">
-            <div className="info-icon">🌱</div>
-            <h3 className="info-title">Evidence-Based</h3>
-            <p className="info-desc">
-              All our remedies are backed by traditional Ayurvedic wisdom and modern research
-            </p>
-          </div>
-          <div className="auth-info-card">
-            <div className="info-icon">🔒</div>
-            <h3 className="info-title">Secure & Private</h3>
-            <p className="info-desc">
-              Your health data is encrypted and protected with industry-standard security
-            </p>
-          </div>
-        </div>
-      </div>
+  const field = (name, label, props) => (
+    <div className="field">
+      <label htmlFor={name} className="field-label">{label}</label>
+      <input
+        id={name}
+        name={name}
+        className="field-input"
+        value={formData[name]}
+        onChange={handleChange}
+        disabled={isLoading}
+        aria-invalid={!!errors[name]}
+        aria-describedby={errors[name] ? `${name}-error` : undefined}
+        {...props}
+      />
+      {errors[name] && <span id={`${name}-error`} className="field-error">{errors[name]}</span>}
     </div>
+  );
+
+  return (
+    <AuthLayout
+      title="Create your account"
+      subtitle="Free, and takes less than a minute."
+      footer={
+        <>
+          Already have an account?{' '}
+          <button className="text-link" onClick={onSwitchToLogin} disabled={isLoading}>
+            Log in
+          </button>
+        </>
+      }
+    >
+      <button className="btn btn-paper btn-lg btn-block" onClick={handleSocialSignup} disabled={isLoading}>
+        <GoogleMark />
+        Continue with Google
+      </button>
+
+      <div className="auth-divider">or with email</div>
+
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        {errorMessage && (
+          <div className="notice notice-chilli" role="alert">
+            <Icon name="alert" size={18} />
+            {errorMessage}
+          </div>
+        )}
+
+        {field('name', 'Name', { type: 'text', autoComplete: 'name', placeholder: 'What should we call you?' })}
+        {field('email', 'Email', { type: 'email', autoComplete: 'email', placeholder: 'you@example.com' })}
+
+        <div className="field">
+          <label htmlFor="password" className="field-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            className="field-input"
+            placeholder="At least 6 characters"
+            value={formData.password}
+            onChange={handleChange}
+            disabled={isLoading}
+            aria-invalid={!!errors.password}
+            aria-describedby="password-strength"
+          />
+          {errors.password ? (
+            <span className="field-error">{errors.password}</span>
+          ) : (
+            <div className="strength" data-level={strength} id="password-strength">
+              <div className="strength-bars" aria-hidden="true"><span /><span /><span /></div>
+              <span>{strength ? strengthLabels[strength] : 'Mix upper, lower case and numbers'}</span>
+            </div>
+          )}
+        </div>
+
+        {field('confirmPassword', 'Confirm password', { type: 'password', autoComplete: 'new-password', placeholder: 'Type it once more' })}
+
+        <div className="field">
+          <label className="check">
+            <input
+              type="checkbox"
+              name="agreeToTerms"
+              checked={formData.agreeToTerms}
+              onChange={handleChange}
+              disabled={isLoading}
+              aria-invalid={!!errors.agreeToTerms}
+            />
+            <span>
+              I understand Natural Healer offers general wellness information, not medical advice.
+            </span>
+          </label>
+          {errors.agreeToTerms && <span className="field-error">{errors.agreeToTerms}</span>}
+        </div>
+
+        <button type="submit" className="btn btn-leaf btn-lg btn-block" disabled={isLoading}>
+          {isLoading ? <span className="spinner" aria-hidden="true" /> : null}
+          {isLoading ? 'Creating account…' : 'Create account'}
+        </button>
+      </form>
+    </AuthLayout>
   );
 };
 

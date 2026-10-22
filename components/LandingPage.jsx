@@ -1,459 +1,432 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Navbar from './Navbar'
+import Icon, { Logo } from './Icon'
+import Vaidya, { VaidyaAvatar } from './Vaidya'
+import BotanicalPlate, { HerbMark } from './Botanicals'
+import { HerbPlates, ClayBowl } from './Herbs'
+import { Mandala, VineDivider } from './Garden'
+import ConditionLedger from './ConditionLedger'
+import { diseases } from '../data/diseases'
+import { beds, bedFor, ingredientsFor, shelfInUse, totalRemedies } from '../data/kitchen'
+import { useReveal, useParallax } from '../hooks/useGardenMotion'
 import '../styles/LandingPage.css'
 
-export default function LandingPage() {
-  const navigate = useNavigate();
+const counts = Object.fromEntries(
+  beds.map(b => [b.id, b.id === 'all' ? diseases.length : diseases.filter(d => d.category === b.id).length])
+)
+
+// The shelf in three tiers: the jars reached for most sit on top, in bigger bowls
+const shelves = [
+  { id: 'most', size: 84, label: 'Used for 3 or more conditions', test: n => n >= 3 },
+  { id: 'two', size: 66, label: 'Used for 2 conditions', test: n => n === 2 },
+  { id: 'one', size: 52, label: 'Used for 1 condition', test: n => n === 1 },
+]
+  .map(tier => ({ ...tier, items: shelfInUse.filter(i => tier.test(i.conditions.length)) }))
+  .filter(tier => tier.items.length > 0)
+
+// The three doshas, as Ayurveda describes them
+const doshas = [
+  {
+    id: 'vata', name: 'Vata', hindi: 'वात', elements: 'Air and space', icon: 'wind',
+    governs: 'Movement: breath, circulation, nerves and the restless mind.',
+    signs: 'When it runs high: dryness, anxiety, poor sleep, aching joints.',
+  },
+  {
+    id: 'pitta', name: 'Pitta', hindi: 'पित्त', elements: 'Fire and water', icon: 'flame',
+    governs: 'Transformation: digestion, metabolism, warmth and sharp focus.',
+    signs: 'When it runs high: acidity, inflammation, irritability, rashes.',
+  },
+  {
+    id: 'kapha', name: 'Kapha', hindi: 'कफ', elements: 'Earth and water', icon: 'mountain',
+    governs: 'Structure: strength, immunity, lubrication and steadiness.',
+    signs: 'When it runs high: congestion, heaviness, sluggish digestion.',
+  },
+]
+
+const doshaCount = (id) => diseases.filter(d => d.doshas.includes(id)).length
+
+// How the product works, stated plainly
+const method = [
+  {
+    icon: 'leaf',
+    title: 'Botanical identity',
+    text: 'Every herb is named by species, the part of the plant used and the compounds researchers study, beside the household name you already know.',
+  },
+  {
+    icon: 'shield',
+    title: 'Safety before remedy',
+    text: 'Each condition carries a severity level and a typical duration. Serious ones are flagged for a doctor’s care, with remedies offered only as support.',
+  },
+  {
+    icon: 'sparkle',
+    title: 'An assistant with limits',
+    text: 'Vanya, the AI guide, answers follow-up questions from an Ayurvedic point of view, keeps your conversations, and tells you when a question needs a clinician.',
+  },
+]
+
+// The hero's example consult is built from the library itself
+const sample = diseases.find(d => d.id === 'cold') || diseases[0]
+
+function matches(disease, query) {
+  const q = query.toLowerCase()
   return (
-    <div className="landing-page">
-      <Navbar />
-      {/* Hero Section */}
-      <section className="landing-hero">
-        <div className="landing-hero-background">
-          <div className="landing-gradient-orb orb-1"></div>
-          <div className="landing-gradient-orb orb-2"></div>
-          <div className="landing-gradient-orb orb-3"></div>
-        </div>
-        
-        <div className="landing-hero-content">
-          <div className="landing-badge">
-            <span className="landing-badge-icon">🌿</span>
-            <span>Ancient Wisdom Meets Modern Technology</span>
-          </div>
-          
-          <h1 className="landing-hero-title">
-            Your Journey to
-            <span className="landing-title-gradient"> Natural Wellness</span>
-            <br />Starts Here
-          </h1>
-          
-          <p className="landing-hero-description">
-            Discover the power of Ayurveda combined with AI technology. Get personalized 
-            natural remedies, expert guidance, and holistic health solutions - all in one platform.
-          </p>
-          
-          <div className="landing-hero-actions">
-            <button className="landing-cta-primary" onClick={() => navigate('/signup')}>
-              <span>Get Started</span>
-            </button>
-          </div>
-          
-          <div className="landing-hero-stats">
-            <div className="landing-stat">
-              <div className="landing-stat-number">10K+</div>
-              <div className="landing-stat-label">Happy Users</div>
-            </div>
-            <div className="landing-stat-divider"></div>
-            <div className="landing-stat">
-              <div className="landing-stat-number">50+</div>
-              <div className="landing-stat-label">Natural Remedies</div>
-            </div>
-            <div className="landing-stat-divider"></div>
-            <div className="landing-stat">
-              <div className="landing-stat-number">24/7</div>
-              <div className="landing-stat-label">AI Support</div>
-            </div>
-          </div>
-        </div>
-      </section>
+    disease.title.toLowerCase().includes(q) ||
+    disease.desc.toLowerCase().includes(q) ||
+    ingredientsFor(disease).some(i =>
+      i.name.toLowerCase().includes(q) || (i.english || '').includes(q) || i.hindi.includes(query)
+    )
+  )
+}
 
-      {/* Features Section */}
-      <section className="landing-features">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-badge">Features</span>
-            <h2 className="landing-section-title">
-              Everything You Need for
-              <span className="landing-text-gradient"> Natural Healing</span>
-            </h2>
-            <p className="landing-section-desc">
-              Comprehensive tools and resources to support your wellness journey
-            </p>
-          </div>
-          
-          <div className="landing-features-grid">
-            <div className="landing-feature-card">
-              <div className="landing-feature-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
-                🤖
-              </div>
-              <h3 className="landing-feature-title">AI Health Assistant</h3>
-              <p className="landing-feature-desc">
-                Get instant answers from our Ayurvedic AI expert. Available 24/7 to guide your wellness journey.
-              </p>
-              <ul className="landing-feature-list">
-                <li>Personalized recommendations</li>
-                <li>Natural remedy suggestions</li>
-                <li>Diet & lifestyle guidance</li>
-              </ul>
-            </div>
-            
-            <div className="landing-feature-card">
-              <div className="landing-feature-icon" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
-                📚
-              </div>
-              <h3 className="landing-feature-title">Remedy Library</h3>
-              <p className="landing-feature-desc">
-                Access 50+ natural remedies for common ailments. Detailed instructions and precautions included.
-              </p>
-              <ul className="landing-feature-list">
-                <li>Evidence-based treatments</li>
-                <li>Step-by-step guides</li>
-                <li>Safety information</li>
-              </ul>
-            </div>
-            
-            <div className="landing-feature-card">
-              <div className="landing-feature-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' }}>
-                🎯
-              </div>
-              <h3 className="landing-feature-title">Personalized Plans</h3>
-              <p className="landing-feature-desc">
-                Get customized wellness plans based on your dosha, health goals, and lifestyle.
-              </p>
-              <ul className="landing-feature-list">
-                <li>Dosha assessment</li>
-                <li>Custom routines</li>
-                <li>Progress tracking</li>
-              </ul>
-            </div>
-            
-            <div className="landing-feature-card">
-              <div className="landing-feature-icon" style={{ background: 'linear-gradient(135deg, #ec4899, #db2777)' }}>
-                🧘
-              </div>
-              <h3 className="landing-feature-title">Holistic Guidance</h3>
-              <p className="landing-feature-desc">
-                Yoga, meditation, and breathing exercises designed to complement your healing journey.
-              </p>
-              <ul className="landing-feature-list">
-                <li>Guided practices</li>
-                <li>Video tutorials</li>
-                <li>Daily routines</li>
-              </ul>
-            </div>
-            
-            <div className="landing-feature-card">
-              <div className="landing-feature-icon" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
-                💊
-              </div>
-              <h3 className="landing-feature-title">Herbal Knowledge</h3>
-              <p className="landing-feature-desc">
-                Comprehensive database of medicinal herbs, their properties, and traditional uses.
-              </p>
-              <ul className="landing-feature-list">
-                <li>Plant encyclopedia</li>
-                <li>Usage guidelines</li>
-                <li>Interaction warnings</li>
-              </ul>
-            </div>
-            
-            <div className="landing-feature-card">
-              <div className="landing-feature-icon" style={{ background: 'linear-gradient(135deg, #06b6d4, #0891b2)' }}>
-                📊
-              </div>
-              <h3 className="landing-feature-title">Health Tracking</h3>
-              <p className="landing-feature-desc">
-                Monitor your symptoms, remedies, and progress over time with intuitive dashboards.
-              </p>
-              <ul className="landing-feature-list">
-                <li>Symptom journal</li>
-                <li>Treatment logs</li>
-                <li>Visual insights</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+export default function LandingPage({ user, onLogout, onOpenAIChat }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [bed, setBed] = useState('all')
+  const [ingredient, setIngredient] = useState(null)
+  const [dosha, setDosha] = useState(null)
+  const [query, setQuery] = useState('')
+  const rootRef = useRef(null)
+  const heroRef = useRef(null)
+  const ledgerRef = useRef(null)
 
-      {/* How It Works */}
-      <section className="landing-how-it-works">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-badge">Process</span>
-            <h2 className="landing-section-title">
-              How <span className="landing-text-gradient">Natural Healer</span> Works
-            </h2>
-            <p className="landing-section-desc">
-              Simple steps to start your natural healing journey
-            </p>
+  useReveal(rootRef)
+  useParallax(heroRef)
+
+  const continueTo = () => navigate(user ? '/home' : '/signup')
+
+  useEffect(() => {
+    if (!location.hash) return
+    document.getElementById(location.hash.slice(1))?.scrollIntoView()
+  }, [location.hash])
+
+  const results = useMemo(
+    () => (query.trim().length > 1 ? diseases.filter(d => matches(d, query.trim())).slice(0, 5) : []),
+    [query]
+  )
+
+  const shelfItem = shelfInUse.find(i => i.id === ingredient)
+  const doshaItem = doshas.find(d => d.id === dosha)
+  const listed = useMemo(() => {
+    if (shelfItem) return diseases.filter(d => shelfItem.conditions.includes(d.id))
+    if (doshaItem) return diseases.filter(d => d.doshas.includes(doshaItem.id))
+    return bed === 'all' ? diseases : diseases.filter(d => d.category === bed)
+  }, [bed, shelfItem, doshaItem])
+
+  const current = bedFor(bed)
+
+  const showLedger = () => ledgerRef.current?.scrollIntoView({ block: 'start' })
+
+  const pickBed = (id) => {
+    setIngredient(null)
+    setDosha(null)
+    setBed(id)
+  }
+
+  const pickResult = (disease) => {
+    pickBed(disease.category)
+    setQuery('')
+    requestAnimationFrame(showLedger)
+  }
+
+  const pickIngredient = (id) => {
+    setDosha(null)
+    setIngredient(id)
+    requestAnimationFrame(showLedger)
+  }
+
+  const pickDosha = (id) => {
+    setIngredient(null)
+    setDosha(id)
+    requestAnimationFrame(showLedger)
+  }
+
+  const clearFilter = () => {
+    setIngredient(null)
+    setDosha(null)
+  }
+
+  const ledgerTitle = shelfItem
+    ? <>Remedies with {shelfItem.name} <span className="hi" lang="hi">{shelfItem.hindi}</span></>
+    : doshaItem
+      ? <>Conditions linked to {doshaItem.name} <span className="hi" lang="hi">{doshaItem.hindi}</span></>
+      : bed === 'all' ? 'All conditions' : current.label
+
+  return (
+    <div className="landing" ref={rootRef}>
+      <Navbar user={user} onLogout={onLogout} onOpenAIChat={onOpenAIChat} overHero />
+
+      <main>
+        {/* Hero */}
+        <section className="hero" ref={heroRef} aria-labelledby="hero-title">
+          <div className="hero-botanical hero-botanical-left" aria-hidden="true">
+            <BotanicalPlate herb="neem" size={220} />
           </div>
-          
-          <div className="landing-steps">
-            <div className="landing-step">
-              <div className="landing-step-number">1</div>
-              <div className="landing-step-content">
-                <h3 className="landing-step-title">Create Your Profile</h3>
-                <p className="landing-step-desc">
-                  Sign up and complete your health assessment to determine your unique dosha type
+
+          <div className="container hero-grid">
+            <div className="hero-copy">
+              <p className="eyebrow hero-eyebrow">Ayurveda <span lang="hi">· आयुर्वेद</span></p>
+              <h1 id="hero-title" className="t-display hero-title">
+                Ayurvedic care, <em>read with evidence.</em>
+              </h1>
+              <p className="t-lead hero-lead">
+                A reference of {diseases.length} everyday conditions and {totalRemedies} kitchen remedies.
+                Every herb is named by its botanical species and studied compounds, and an AI
+                assistant answers your follow-up questions and tells you plainly when to see a doctor.
+              </p>
+
+              <form className="hero-search" role="search" onSubmit={(e) => {
+                e.preventDefault()
+                if (results[0]) pickResult(results[0])
+              }}>
+                <label htmlFor="hero-query" className="visually-hidden">Search a condition or ingredient</label>
+                <Icon name="search" size={20} className="hero-search-icon" />
+                <input
+                  id="hero-query"
+                  className="hero-input"
+                  type="search"
+                  autoComplete="off"
+                  placeholder="Search a condition or ingredient, like “cold” or “haldi”"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  aria-controls="hero-results"
+                />
+                <button type="submit" className="btn btn-leaf hero-search-btn">Search</button>
+
+                {query.trim().length > 1 && (
+                  <ul id="hero-results" className="hero-results" aria-live="polite">
+                    {results.length === 0 ? (
+                      <li className="hero-empty">No condition or ingredient matches “{query.trim()}” yet.</li>
+                    ) : results.map(d => (
+                      <li key={d.id}>
+                        <button type="button" className="hero-result" data-category={d.category} onClick={() => pickResult(d)}>
+                          <HerbMark herb={bedFor(d.category).herb} size={34} />
+                          <span className="hero-result-title">{d.title}</span>
+                          <span className="hero-result-bed">{bedFor(d.category).label}</span>
+                          <Icon name="arrowRight" size={16} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </form>
+
+              <dl className="hero-facts">
+                <div><dt>Conditions</dt><dd>{diseases.length}</dd></div>
+                <div><dt>Remedies</dt><dd>{totalRemedies}</dd></div>
+                <div><dt>Kitchen ingredients</dt><dd>{shelfInUse.length}</dd></div>
+              </dl>
+            </div>
+
+            <div className="hero-stage">
+              <div className="hero-arch" aria-hidden="true">
+                <Mandala size={460} color="#B08D57" className="hero-mandala" />
+                <div className="hero-vaidya">
+                  <Vaidya size={330} />
+                </div>
+              </div>
+
+              {/* An example consult, assembled from the library's own entry */}
+              <figure className="consult" aria-label="Example answer from the AI guide">
+                <figcaption className="consult-head">
+                  <VaidyaAvatar size={34} />
+                  <span>
+                    <strong>Vanya</strong>
+                    <span className="consult-role">AI Ayurveda guide · example</span>
+                  </span>
+                </figcaption>
+                <p className="consult-q">I have a mild cold. What can I make at home?</p>
+                <ul className="consult-a">
+                  {sample.remedies.slice(0, 2).map(r => <li key={r}>{r}</li>)}
+                </ul>
+                <p className="consult-meta">
+                  <span>Usually {sample.duration}</span>
+                  <span className="consult-dot" aria-hidden="true" />
+                  <span>Dosha: {sample.doshas.join(', ')}</span>
                 </p>
-              </div>
-              <div className="landing-step-icon">👤</div>
-            </div>
-            
-            <div className="landing-step-connector"></div>
-            
-            <div className="landing-step">
-              <div className="landing-step-number">2</div>
-              <div className="landing-step-content">
-                <h3 className="landing-step-title">Explore Remedies</h3>
-                <p className="landing-step-desc">
-                  Browse our extensive library of natural treatments or ask our AI assistant for recommendations
-                </p>
-              </div>
-              <div className="landing-step-icon">🔍</div>
-            </div>
-            
-            <div className="landing-step-connector"></div>
-            
-            <div className="landing-step">
-              <div className="landing-step-number">3</div>
-              <div className="landing-step-content">
-                <h3 className="landing-step-title">Get Personalized Plan</h3>
-                <p className="landing-step-desc">
-                  Receive a customized wellness plan with remedies, diet, yoga, and lifestyle recommendations
-                </p>
-              </div>
-              <div className="landing-step-icon">📋</div>
-            </div>
-            
-            <div className="landing-step-connector"></div>
-            
-            <div className="landing-step">
-              <div className="landing-step-number">4</div>
-              <div className="landing-step-content">
-                <h3 className="landing-step-title">Track Progress</h3>
-                <p className="landing-step-desc">
-                  Monitor your journey, adjust treatments, and achieve optimal health naturally
-                </p>
-              </div>
-              <div className="landing-step-icon">📈</div>
+              </figure>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Benefits Section */}
-      <section className="landing-benefits">
-        <div className="landing-container">
-          <div className="landing-benefits-layout">
-            <div className="landing-benefits-content">
-              <span className="landing-section-badge">Benefits</span>
-              <h2 className="landing-section-title">
-                Why Choose
-                <span className="landing-text-gradient"> Natural Healing?</span>
-              </h2>
-              
-              <div className="landing-benefits-list">
-                <div className="landing-benefit-item">
-                  <div className="landing-benefit-icon">✓</div>
-                  <div className="landing-benefit-text">
-                    <h4>No Side Effects</h4>
-                    <p>Natural remedies work with your body, not against it</p>
-                  </div>
-                </div>
-                
-                <div className="landing-benefit-item">
-                  <div className="landing-benefit-icon">✓</div>
-                  <div className="landing-benefit-text">
-                    <h4>Time-Tested Wisdom</h4>
-                    <p>5000+ years of Ayurvedic knowledge and practice</p>
-                  </div>
-                </div>
-                
-                <div className="landing-benefit-item">
-                  <div className="landing-benefit-icon">✓</div>
-                  <div className="landing-benefit-text">
-                    <h4>Holistic Approach</h4>
-                    <p>Treats root causes, not just symptoms</p>
-                  </div>
-                </div>
-                
-                <div className="landing-benefit-item">
-                  <div className="landing-benefit-icon">✓</div>
-                  <div className="landing-benefit-text">
-                    <h4>Cost-Effective</h4>
-                    <p>Affordable natural solutions for everyone</p>
-                  </div>
-                </div>
-                
-                <div className="landing-benefit-item">
-                  <div className="landing-benefit-icon">✓</div>
-                  <div className="landing-benefit-text">
-                    <h4>Sustainable Wellness</h4>
-                    <p>Long-term health improvement and prevention</p>
-                  </div>
-                </div>
-                
-                <div className="landing-benefit-item">
-                  <div className="landing-benefit-icon">✓</div>
-                  <div className="landing-benefit-text">
-                    <h4>AI-Powered Insights</h4>
-                    <p>Modern technology meets ancient wisdom</p>
-                  </div>
-                </div>
-              </div>
-              
-              <button className="landing-cta-primary" onClick={() => navigate('/signup')}>
-                Start Your Journey
-                <span className="landing-cta-icon">→</span>
-              </button>
-            </div>
-            
-            <div className="landing-benefits-visual">
-              <div className="landing-visual-card card-1">
-                <div className="landing-visual-icon">🌱</div>
-                <div className="landing-visual-stat">95%</div>
-                <div className="landing-visual-label">User Satisfaction</div>
-              </div>
-              <div className="landing-visual-card card-2">
-                <div className="landing-visual-icon">⭐</div>
-                <div className="landing-visual-stat">4.9/5</div>
-                <div className="landing-visual-label">Average Rating</div>
-              </div>
-              <div className="landing-visual-card card-3">
-                <div className="landing-visual-icon">💚</div>
-                <div className="landing-visual-stat">10K+</div>
-                <div className="landing-visual-label">Success Stories</div>
-              </div>
-            </div>
+        {/* Method */}
+        <section className="section method-section" aria-labelledby="method-title">
+          <div className="container">
+            <header className="section-head" data-reveal>
+              <p className="eyebrow">Method</p>
+              <h2 id="method-title" className="t-title">Tradition, held to a plain standard.</h2>
+            </header>
+            <ol className="method-grid">
+              {method.map((m, i) => (
+                <li key={m.title} className="method-item" data-reveal style={{ '--d': i }}>
+                  <span className="method-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="method-icon"><Icon name={m.icon} size={22} strokeWidth={1.6} /></span>
+                  <h3 className="method-title">{m.title}</h3>
+                  <p className="method-text">{m.text}</p>
+                </li>
+              ))}
+            </ol>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Health Insights & Statistics */}
-      <section className="landing-testimonials">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-badge">Health Insights</span>
-            <h2 className="landing-section-title">
-              Proven <span className="landing-text-gradient">Health Benefits</span>
-            </h2>
-            <p className="landing-section-desc">
-              Evidence-based natural remedies backed by traditional wisdom
-            </p>
-          </div>
-          
-          <div className="landing-testimonials-grid">
-            <div className="landing-testimonial-card">
-              <div className="landing-insight-icon">🌿</div>
-              <h3 className="landing-insight-title">Natural Immunity</h3>
-              <p className="landing-testimonial-text">
-                Studies show that regular consumption of Ayurvedic herbs like Tulsi and Turmeric 
-                can boost immunity by up to 40% and reduce inflammation naturally.
-              </p>
-              <div className="landing-insight-stats">
-                <div className="landing-insight-stat">
-                  <div className="landing-stat-number">40%</div>
-                  <div className="landing-stat-label">Immunity Boost</div>
-                </div>
-                <div className="landing-insight-stat">
-                  <div className="landing-stat-number">85%</div>
-                  <div className="landing-stat-label">User Satisfaction</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="landing-testimonial-card">
-              <div className="landing-insight-icon">🧘</div>
-              <h3 className="landing-insight-title">Stress Reduction</h3>
-              <p className="landing-testimonial-text">
-                Ashwagandha and meditation techniques have been clinically proven to reduce 
-                cortisol levels by 28% and improve sleep quality significantly.
-              </p>
-              <div className="landing-insight-stats">
-                <div className="landing-insight-stat">
-                  <div className="landing-stat-number">28%</div>
-                  <div className="landing-stat-label">Less Stress</div>
-                </div>
-                <div className="landing-insight-stat">
-                  <div className="landing-stat-number">92%</div>
-                  <div className="landing-stat-label">Better Sleep</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="landing-testimonial-card">
-              <div className="landing-insight-icon">💪</div>
-              <h3 className="landing-insight-title">Digestive Health</h3>
-              <p className="landing-testimonial-text">
-                Traditional Ayurvedic remedies like Triphala and ginger have shown to improve 
-                digestive health and gut microbiome balance in 70% of users.
-              </p>
-              <div className="landing-insight-stats">
-                <div className="landing-insight-stat">
-                  <div className="landing-stat-number">70%</div>
-                  <div className="landing-stat-label">Improved Digestion</div>
-                </div>
-                <div className="landing-insight-stat">
-                  <div className="landing-stat-number">95%</div>
-                  <div className="landing-stat-label">Natural Solution</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        <VineDivider />
 
-      {/* Final CTA */}
-      <section className="landing-final-cta">
-        <div className="landing-container">
-          <div className="landing-cta-card">
-            <div className="landing-cta-content">
-              <h2 className="landing-cta-title">
-                Ready to Transform Your Health Naturally?
-              </h2>
-              <p className="landing-cta-desc">
-                Join thousands of users who have discovered the power of natural healing. 
-                Start your journey today - it's free!
+        {/* Materia medica and the condition library */}
+        <section className="section library-section" id="remedies" aria-labelledby="library-title">
+          <div className="container">
+            <header className="section-head" data-reveal>
+              <p className="eyebrow">Materia medica <span lang="hi">· द्रव्यगुण</span></p>
+              <h2 id="library-title" className="t-title">Seven herbs anchor the library.</h2>
+              <p className="t-lead">
+                Choose a plate to see the conditions in its category. Open any condition for preparation,
+                prevention and when it needs a doctor.
               </p>
-              <div className="landing-cta-actions">
-                <button className="landing-cta-primary large" onClick={() => navigate('/signup')}>
-                  Get Started
+            </header>
+
+            <div data-reveal>
+              <HerbPlates selected={shelfItem || doshaItem ? null : bed} onSelect={pickBed} counts={counts} />
+            </div>
+
+            {current.part && !shelfItem && !doshaItem && (
+              <dl className="monograph" key={current.id} data-category={current.id}>
+                <div><dt>Species</dt><dd><em>{current.latin}</em></dd></div>
+                <div><dt>Part used</dt><dd>{current.part}</dd></div>
+                <div><dt>Studied compounds</dt><dd>{current.compounds}</dd></div>
+              </dl>
+            )}
+
+            <div className="ledger-wrap" ref={ledgerRef} data-category={bed}>
+              <header className="ledger-head-row">
+                <div>
+                  <h3 className="ledger-heading">{ledgerTitle}</h3>
+                  <p className="t-muted">
+                    {shelfItem || doshaItem ? (
+                      <button type="button" className="text-link" onClick={clearFilter}>
+                        Back to {current.label.toLowerCase()}
+                      </button>
+                    ) : (
+                      `${listed.length} ${listed.length === 1 ? 'condition' : 'conditions'} · open one for preparation and safety notes`
+                    )}
+                  </p>
+                </div>
+              </header>
+              <ConditionLedger
+                key={`${bed}-${ingredient}-${dosha}`}
+                conditions={listed}
+                mode="expand"
+                highlight={ingredient}
+                onContinue={continueTo}
+                continueLabel={user ? 'Open in my remedies' : 'Save it and ask the guide'}
+              />
+              <p className="compound-note">
+                Compounds are those most often studied for each plant. Listing them is not a claim that a remedy will work for you.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* The kitchen shelf: every ingredient the library calls for */}
+        <section className="section shelf-section" id="shelf" aria-labelledby="shelf-title">
+          <div className="container shelf-grid">
+            <div className="shelf-intro" data-reveal="left">
+              <p className="eyebrow">Ingredients</p>
+              <h2 id="shelf-title" className="t-title">Already in an Indian kitchen.</h2>
+              <p className="t-lead">
+                No exotic powders and no shopping list. Select an ingredient to see every condition it is used for.
+              </p>
+            </div>
+            <div className="shelves" data-reveal="right">
+              {shelves.map(shelf => (
+                <div key={shelf.id} className="shelf" style={{ '--k': `${shelf.size}px` }}>
+                  <p className="shelf-label">{shelf.label}</p>
+                  <ul className="shelf-items">
+                    {shelf.items.map((item, i) => (
+                      <li key={item.id} style={{ '--i': i }}>
+                        <button
+                          type="button"
+                          className="jar"
+                          aria-pressed={ingredient === item.id}
+                          onClick={() => pickIngredient(item.id)}
+                        >
+                          <ClayBowl spice={item.fill} size={shelf.size} />
+                          <span className="jar-name">{item.name}</span>
+                          <span className="jar-hi" lang="hi">{item.hindi}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* The three doshas, explained plainly */}
+        <section className="section dosha-section" aria-labelledby="dosha-title">
+          <div className="container">
+            <header className="section-head section-head-center" data-reveal>
+              <p className="eyebrow">Tridosha</p>
+              <h2 id="dosha-title" className="t-title">Three functional principles.</h2>
+              <p className="t-lead">
+                Ayurveda describes the body through three doshas. Each condition in the library records which ones it disturbs.
+              </p>
+            </header>
+            <div className="dosha-grid">
+              {doshas.map((d, i) => (
+                <article key={d.id} className={`dosha-card dosha-${d.id}`} data-reveal style={{ '--d': i }}>
+                  <span className="dosha-orb" aria-hidden="true">
+                    <Icon name={d.icon} size={24} strokeWidth={1.6} />
+                  </span>
+                  <h3 className="dosha-name">{d.name} <span className="hi" lang="hi">{d.hindi}</span></h3>
+                  <p className="dosha-elements">{d.elements}</p>
+                  <p className="dosha-text">{d.governs}</p>
+                  <p className="dosha-text dosha-signs">{d.signs}</p>
+                  <button type="button" className="btn btn-ghost btn-sm dosha-btn" onClick={() => pickDosha(d.id)}>
+                    {doshaCount(d.id)} linked conditions
+                    <Icon name="arrowRight" size={16} className="btn-arrow" />
+                  </button>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Honest close */}
+        <section className="closing" aria-labelledby="closing-title">
+          <Mandala size={720} color="#B08D57" className="closing-mandala" />
+          <div className="container closing-grid">
+            <div className="closing-plate" aria-hidden="true" data-reveal>
+              <BotanicalPlate herb="tulsi" size={200} />
+            </div>
+            <div className="closing-body" data-reveal>
+              <p className="eyebrow closing-eyebrow">Our position</p>
+              <h2 id="closing-title" className="t-title">A kitchen remedy is a first step, not a prescription.</h2>
+              <p className="t-lead">
+                Every entry states how long a condition usually lasts and when it is time to see a doctor.
+                Create a free account to save the remedies your family relies on and ask Vanya what the page doesn't answer.
+              </p>
+              <div className="closing-actions">
+                <button className="btn btn-leaf btn-lg" onClick={continueTo}>
+                  {user ? 'Open your remedies' : 'Create a free account'}
+                  <Icon name="arrowRight" size={18} className="btn-arrow" />
                 </button>
-                <p className="landing-cta-note">No credit card required • 7-day free trial</p>
-              </div>
-            </div>
-            <div className="landing-cta-features">
-              <div className="landing-cta-feature">
-                <span className="landing-cta-feature-icon">✓</span>
-                <span>Access to all remedies</span>
-              </div>
-              <div className="landing-cta-feature">
-                <span className="landing-cta-feature-icon">✓</span>
-                <span>Unlimited AI consultations</span>
-              </div>
-              <div className="landing-cta-feature">
-                <span className="landing-cta-feature-icon">✓</span>
-                <span>Personalized wellness plans</span>
-              </div>
-              <div className="landing-cta-feature">
-                <span className="landing-cta-feature-icon">✓</span>
-                <span>Progress tracking tools</span>
+                {!user && <Link to="/login" className="btn btn-ghost btn-lg closing-ghost">Log in</Link>}
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Footer */}
-      <footer className="landing-footer">
-        <div className="landing-container">
-          <div className="landing-footer-content">
-            <div className="landing-footer-brand">
-              <div className="landing-footer-logo">
-                <span className="landing-footer-logo-icon">🌿</span>
-                <span className="landing-footer-logo-text">Natural Healer</span>
-              </div>
-              <p className="landing-footer-desc">
-                Empowering your wellness journey with ancient wisdom and modern technology.
-              </p>
-            </div>
-          </div>
-          
-          <div className="landing-footer-bottom">
-            <p>&copy; Made By: #AbdullahSlash</p>
-          </div>
+      <footer className="footer">
+        <div className="container footer-inner">
+          <span className="footer-brand">
+            <Logo size={30} />
+            <span className="footer-name">Natural Healer</span>
+          </span>
+          <p className="footer-note">
+            Educational information, not medical advice. Consult a qualified practitioner before starting a new remedy.
+          </p>
+          <p className="footer-credit">Made by #AbdullahSlash</p>
         </div>
       </footer>
     </div>

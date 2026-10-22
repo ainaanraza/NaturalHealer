@@ -1,0 +1,569 @@
+/* ==========================================================================
+   Natural Healer: Vanaspati, an Ayurvedic materia medica.
+   Cream handmade paper is the ground, deep leaf green carries what you read
+   and what you do, brass and clay warm it, chilli warns. Each category is
+   anchored to a botanical plate; motion is slow, quiet and purposeful.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Handmade paper */
+  --paper: #F6F1E4;
+  --paper-2: #EFE7D3;
+  --paper-3: #E6DCC2;
+  --card: #FFFDF7;
+  --line: rgba(47, 82, 51, 0.14);
+  --line-strong: rgba(47, 82, 51, 0.26);
+  --fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.22 0 0 0 0.9 -0.42'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.35'/%3E%3C/svg%3E");
+
+  /* Leaf: ink and action */
+  --leaf-950: #142618;
+  --leaf-900: #1F3A24;
+  --leaf-800: #2F5233;
+  --leaf-700: #2F6B3A;
+  --leaf-600: #3F7B45;
+  --leaf-500: #5E8C4A;
+  --leaf-400: #7FA86A;
+  --leaf-300: #A7C38A;
+  --leaf-200: #C8DDB5;
+  --leaf-100: #E6EFDB;
+
+  /* Warm earth */
+  --sandal: #E9D8A6;
+  --sandal-2: #F3E8C8;
+  --clay: #C9733B;
+  --clay-deep: #9A4E22;
+  --clay-soft: rgba(201, 115, 59, 0.14);
+  --haldi: #E3A31A;
+  --haldi-soft: #FBE9B7;
+  --brass: #B08D57;
+  --brass-deep: #7E6232;
+  --lotus: #E58FA6;
+  --sky: #CFE3E6;
+  --dusk: #2C3A4F;
+
+  /* Text */
+  --ink: #22301F;
+  --ink-2: #4C5A45;
+  --ink-3: #6E7865;
+  --on-leaf: #FFFDF5;
+
+  /* Roles */
+  --action: var(--leaf-700);
+  --action-hi: var(--leaf-600);
+  --chilli: #B3361F;
+  --chilli-soft: rgba(179, 54, 31, 0.09);
+  --chilli-text: #9C2C17;
+
+  /* Spice colours for category accents (filled in herb resolution below) */
+  --rai: #2B2520;
+  --ajwain: #9C8A55;
+  --jeera: #8A6136;
+  --elaichi: #7F9A52;
+  --saunth: #CDA978;
+  --dalchini: #94502F;
+
+  /* Type */
+  --font-display: "Cormorant Garamond", "Tiro Devanagari Hindi", Georgia, serif;
+  --font-body: "Manrope", "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-hand: "Cormorant Garamond", Georgia, serif;
+
+  /* Shape */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-full: 999px;
+  --r-leaf: 28px 6px 28px 6px;
+
+  /* Depth: soft, warm daylight */
+  --drop-1: 0 1px 2px rgba(60, 50, 20, 0.08), 0 2px 8px -2px rgba(60, 50, 20, 0.10);
+  --drop-2: 0 2px 4px rgba(60, 50, 20, 0.06), 0 14px 32px -12px rgba(47, 82, 51, 0.28);
+  --drop-3: 0 6px 12px rgba(60, 50, 20, 0.08), 0 36px 72px -24px rgba(31, 58, 36, 0.42);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* No overshoot anywhere: motion settles, it never bounces */
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Layout */
+  --page-max: 1200px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --nav-h: 68px;
+}
+
+/* Category accent: set data-category or data-herb on any element */
+[data-category="all"], [data-herb="all"] { --accent: var(--leaf-700); --accent-soft: var(--leaf-100); }
+[data-category="respiratory"], [data-herb="tulsi"] { --accent: #3F7B45; --accent-soft: #E3EFD8; }
+[data-category="digestive"], [data-herb="saunf"] { --accent: #7C8F3A; --accent-soft: #EEF1D6; }
+[data-category="mental"], [data-herb="brahmi"] { --accent: #8C5BA8; --accent-soft: #F0E6F4; }
+[data-category="skin"], [data-herb="haldi"] { --accent: #C98A0B; --accent-soft: #FBEFCB; }
+[data-category="musculoskeletal"], [data-herb="adrak"] { --accent: #B0703A; --accent-soft: #F6E6D4; }
+[data-category="chronic"], [data-herb="neem"] { --accent: #2F6B5A; --accent-soft: #DDEEE8; }
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 16px);
+  background-color: var(--paper);
+  background-image: var(--fibre);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  caret-color: var(--leaf-700);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: var(--leaf-900);
+}
+
+p { margin: 0; text-wrap: pretty; }
+ul, ol { margin: 0; padding: 0; }
+img, svg, canvas { display: block; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-underline-offset: 3px; }
+
+::selection { background: var(--leaf-200); color: var(--leaf-950); }
+
+:focus-visible {
+  outline: 3px solid var(--haldi);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+* { scrollbar-color: var(--leaf-300) transparent; scrollbar-width: thin; }
+
+/* ==========================================================================
+   Type
+   ========================================================================== */
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.t-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  line-height: 1.08;
+}
+
+.t-heading {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.3rem;
+  line-height: 1.3;
+  color: var(--leaf-900);
+}
+
+.t-small-title {
+  font-family: var(--font-body);
+  font-weight: 800;
+}
+
+.t-lead {
+  font-size: clamp(1.0625rem, 1.5vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+
+.t-muted { color: var(--ink-3); }
+
+/* Handwritten note in the margin of a herbal journal */
+/* Small-caps label above a heading, with a hairline rule */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--brass-deep);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* Hindi names sit beside English ones */
+.hi {
+  font-family: "Mukta", var(--font-body);
+  font-weight: 500;
+  font-size: 0.92em;
+  color: var(--ink-3);
+}
+
+/* ==========================================================================
+   Layout helpers
+   ========================================================================== */
+
+.container {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Paper card with a deckled shadow */
+.paper-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--drop-2);
+}
+
+/* Scroll reveal: elements rise into place once seen */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 900ms var(--ease-out), transform 1100ms var(--ease-expo);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+
+[data-reveal="left"] { transform: translateX(-20px); }
+[data-reveal="right"] { transform: translateX(20px); }
+[data-reveal="scale"] { transform: scale(0.97); }
+[data-reveal].is-seen { opacity: 1; transform: none; }
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  --btn-h: 48px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--btn-h);
+  padding: 0 24px;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-sm);
+  font-size: 0.975rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 200ms var(--ease-out),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+.btn:active:not(:disabled) { transform: translateY(1px) scale(0.97); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-sm { --btn-h: 40px; padding: 0 18px; font-size: 0.9375rem; }
+.btn-lg { --btn-h: 56px; padding: 0 30px; font-size: 1.0625rem; }
+.btn-block { width: 100%; }
+
+/* Leaf: the one colour that means "do this" */
+.btn-leaf {
+  background: var(--leaf-700);
+  color: var(--on-leaf);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 4px 12px -6px rgba(31, 58, 36, 0.55);
+}
+
+.btn-paper {
+  background: var(--card);
+  color: var(--leaf-900);
+  border-color: var(--line-strong);
+  box-shadow: var(--drop-1);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--leaf-800);
+  border-color: var(--line-strong);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-leaf:hover:not(:disabled) {
+    background: var(--leaf-800);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 8px 18px -8px rgba(31, 58, 36, 0.6);
+  }
+  .btn-paper:hover:not(:disabled) { border-color: var(--leaf-500); }
+  .btn-ghost:hover:not(:disabled) { background: var(--leaf-100); border-color: var(--leaf-400); }
+  .btn:hover .btn-arrow { transform: translateX(3px); }
+}
+
+.btn .btn-arrow { transition: transform 250ms var(--ease-spring); }
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms var(--ease-spring), background-color 180ms ease;
+}
+
+.icon-btn:active:not(:disabled) { transform: scale(0.88); }
+.icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover:not(:disabled) { background: rgba(63, 123, 69, 0.12); }
+}
+
+.text-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--leaf-700);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--leaf-300);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 160ms ease, color 160ms ease;
+}
+
+.text-link:hover:not(:disabled) { color: var(--leaf-800); text-decoration-color: var(--leaf-700); }
+.text-link:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ==========================================================================
+   Fields
+   ========================================================================== */
+
+.field { display: grid; gap: 6px; }
+
+.field-label {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--leaf-900);
+}
+
+.field-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 18px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1.0625rem;
+  transition: border-color 160ms ease, box-shadow 200ms ease, background-color 160ms ease;
+}
+
+.field-input::placeholder { color: #8A917F; }
+
+.field-input:hover:not(:disabled) { border-color: var(--leaf-400); }
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--leaf-600);
+  box-shadow: 0 0 0 4px rgba(127, 168, 106, 0.3);
+}
+
+.field-input[aria-invalid="true"] { border-color: var(--chilli); }
+.field-input[aria-invalid="true"]:focus { box-shadow: 0 0 0 4px var(--chilli-soft); }
+
+.field-error {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--chilli-text);
+}
+
+.field-hint {
+  font-size: 0.875rem;
+  color: var(--ink-3);
+}
+
+/* ==========================================================================
+   Tags and notices
+   ========================================================================== */
+
+/* A little seed-packet label for ingredient names */
+.tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 12px 3px;
+  border-radius: 6px;
+  background: var(--sandal-2);
+  border: 1px solid rgba(154, 78, 34, 0.16);
+  color: var(--leaf-900);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.tag .hi { font-weight: 500; }
+
+.tag.is-match {
+  background: var(--leaf-700);
+  border-color: var(--leaf-700);
+  color: var(--on-leaf);
+}
+
+.tag.is-match .hi { color: var(--leaf-100); }
+
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.notice svg { flex-shrink: 0; margin-top: 3px; }
+
+/* Chilli: reserved for "see a doctor" and errors */
+.notice-chilli {
+  border-color: rgba(179, 54, 31, 0.35);
+  background: #FCEFEA;
+  color: #5A1E10;
+}
+
+.notice-chilli svg { color: var(--chilli); }
+
+.notice-ok {
+  border-color: rgba(63, 123, 69, 0.35);
+  background: var(--leaf-100);
+  color: var(--leaf-900);
+}
+
+.notice-ok svg { color: var(--leaf-700); }
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 650ms linear infinite;
+}
+
+/* ==========================================================================
+   Shared motion
+   ========================================================================== */
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Botanical ink: strokes draw themselves in once their plate is seen */
+@keyframes ink {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* ==========================================================================
+   Accessibility preferences
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 160ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+  }
+  [data-reveal] { transform: none !important; }
+  /* Ambient garden life stays still */
+  .ink path, .ink circle, .ink ellipse { stroke-dashoffset: 0 !important; }
+  /* Entrances and exits become fades; nothing travels */
+  [data-motion="slide"], .msg, .ledger-row, .chat-suggestion, .dmodal, .fchat,
+  .navbar-sheet, .auth-panel, .empty, .auth-sent-icon,
+  .auth-sent > * { animation-name: fade-in !important; }
+  .dmodal-root[data-state="closing"] .dmodal,
+  .fchat-root[data-state="closing"] .fchat,
+  .navbar-sheet[data-state="closing"] { animation-name: fade-out !important; }
+}
+
+@media (prefers-contrast: more) {
+  :root { --ink-2: #2F3A2A; --ink-3: #46503F; --line: rgba(31, 58, 36, 0.3); --line-strong: rgba(31, 58, 36, 0.5); }
+}

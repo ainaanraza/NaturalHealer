@@ -9,7 +9,7 @@ import Signup from './components/Signup'
 import ForgotPassword from './components/ForgotPassword'
 import Homepage from './components/Homepage'
 import FloatingAIChat from './components/FloatingAIChat'
-import './styles/App.css'
+import { VaidyaAvatar } from './components/Vaidya'
 
 function AppRoutes() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -52,21 +52,28 @@ function AppRoutes() {
     navigate('/')
   }
 
-  // Show loading spinner while checking auth state
-  if (isLoading) {
-    return (
-      <div className="auth-loading">
-        <div className="spinner"></div>
-        <p>Loading...</p>
-      </div>
-    )
-  }
+  // Public pages render immediately; only the private dashboard waits for the session
+  const sessionPending = (
+    <div className="auth-loading" role="status">
+      <VaidyaAvatar size={72} />
+      <p>Preparing your remedies…</p>
+    </div>
+  )
 
   return (
     <>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/"
+          element={
+            <LandingPage
+              user={user}
+              onLogout={handleLogout}
+              onOpenAIChat={() => setIsAIChatOpen(true)}
+            />
+          }
+        />
         <Route 
           path="/login" 
           element={
@@ -107,7 +114,7 @@ function AppRoutes() {
         <Route 
           path="/home" 
           element={
-            isAuthenticated ? (
+            isLoading ? sessionPending : isAuthenticated ? (
               <Homepage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} />
             ) : (
               <Navigate to="/login" replace />
