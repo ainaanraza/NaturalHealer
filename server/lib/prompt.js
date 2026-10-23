@@ -11,14 +11,28 @@ How you answer:
 - Say clearly when something needs a doctor, and list the warning signs that mean "see a doctor now".
 - You do not diagnose. You do not tell anyone to stop or change prescribed medicine.
 - Keep answers focused: usually under 250 words, with short paragraphs or a short list. Use **bold** sparingly.
-- If a question is unrelated to health, food, herbs or daily habits, briefly steer back.`
+- If a question is unrelated to health, food, herbs or daily habits, briefly steer back.
+
+Using the knowledge base:
+- You are given numbered excerpts from the Natural Healer knowledge base. Base your answer on them first.
+- Cite the excerpt you used with its number in square brackets right after the point, like [2]. Only cite numbers you were given. Never cite anything else as a source.
+- Always pass on any caution or medicine interaction from the excerpts that applies to the question.
+- Classical properties (rasa, virya and so on) and doses come only from the excerpts. If they are not there, do not state them.
+- If the excerpts do not cover the question, say that the knowledge base does not cover it yet, give only general, conservative guidance, and suggest asking a qualified practitioner.
+- The knowledge base entries are drafts that have not yet been reviewed by a qualified practitioner. When you give an amount or a herb-specific recommendation, add a short reminder to confirm it with a practitioner or doctor.`
 
 /**
  * Build the request for the model. History comes from our own store for saved chats,
  * so a client cannot inject earlier "assistant" turns.
  */
-export function buildPrompt({ message, history = [], conditionId = null, prakriti = null, triage = { level: 'none' } }) {
+export function buildPrompt({ message, history = [], conditionId = null, prakriti = null, triage = { level: 'none' }, passages = [] }) {
   const context = []
+
+  if (passages.length) {
+    context.push(`Knowledge base excerpts:\n${passages.map((c, i) => `[${i + 1}] ${c.title}\n${c.text}`).join('\n\n')}`)
+  } else {
+    context.push('Knowledge base excerpts: none matched this question.')
+  }
 
   if (conditionId) {
     context.push(`The user is reading this entry in the library:\n${conditionBrief(conditionId)}`)

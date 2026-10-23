@@ -67,7 +67,7 @@ function firestoreStore() {
       const snap = await messages(uid, chatId).orderBy('createdAt', 'desc').limit(limit).get()
       return snap.docs.reverse().map(doc => {
         const d = doc.data()
-        return { id: doc.id, role: d.role, text: d.text, triage: d.triage || null, createdAt: toDate(d.createdAt) }
+        return { id: doc.id, role: d.role, text: d.text, triage: d.triage || null, sources: d.sources || [], createdAt: toDate(d.createdAt) }
       })
     },
 
@@ -76,7 +76,7 @@ function firestoreStore() {
       const batch = db.batch()
       const now = Date.now()
       turn.forEach((m, i) => {
-        batch.set(messages(uid, chatId).doc(), { role: m.role, text: m.text, triage: m.triage || null, createdAt: Timestamp.fromMillis(now + i) })
+        batch.set(messages(uid, chatId).doc(), { role: m.role, text: m.text, triage: m.triage || null, sources: m.sources || [], createdAt: Timestamp.fromMillis(now + i) })
       })
       batch.update(chats(uid).doc(chatId), { messageCount: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() })
       await batch.commit()
@@ -146,7 +146,7 @@ function memoryStore() {
     async listMessages(uid, chatId, { limit = 200 } = {}) { return (msgs.get(`${uid}/${chatId}`) || []).slice(-limit) },
     async addTurn(uid, chatId, turn) {
       const list = msgs.get(`${uid}/${chatId}`) || []
-      turn.forEach(m => list.push({ id: id(), role: m.role, text: m.text, triage: m.triage || null, createdAt: new Date() }))
+      turn.forEach(m => list.push({ id: id(), role: m.role, text: m.text, triage: m.triage || null, sources: m.sources || [], createdAt: new Date() }))
       msgs.set(`${uid}/${chatId}`, list)
       const c = chats.get(`${uid}/${chatId}`)
       if (c) { c.messageCount += 1; c.updatedAt = new Date() }

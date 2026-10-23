@@ -5,6 +5,8 @@ import { getStore } from '../server/lib/store.js'
 import { conditionIds } from '../server/lib/library.js'
 import { triage, emergencyReply, cautionNotice } from '../server/lib/safety.js'
 import { buildPrompt } from '../server/lib/prompt.js'
+import { retrieve } from '../server/lib/knowledge/search.js'
+import { citedSources } from '../server/lib/knowledge/cite.js'
 import { streamAnswer, friendlyAIError } from '../server/lib/gemini.js'
 
 const MAX_MESSAGE = 1000
@@ -82,6 +84,7 @@ export default route({
     send('meta', { chatId, triage: safety.level })
 
     let answer = ''
+    let sources = []
     try {
       if (safety.level === 'emergency') {
         answer = emergencyReply(safety)
@@ -91,12 +94,16 @@ export default route({
           answer = cautionNotice(safety)
           send('delta', { text: answer })
         }
-        const prompt = buildPrompt({ message, history, conditionId, prakriti: profile?.prakriti, triage: safety })
+        // Follow-ups like "is it safe for me?" lean on the previous question for search terms
+        const lastQuestion = [...history].reverse().find(m => m.role === 'user')?.text || ''
+        const passages = retrieve(`${message} ${lastQuestion}`, { conditionId })
+        const prompt = buildPrompt({ message, history, conditionId, prakriti: profile?.prakriti, triage: safety, passages })
         for await (const text of streamAnswer(prompt)) {
           if (closed) break
           answer += text
           send('delta', { text })
         }
+        sources = citedSources(answer, passages)
       }
 
       if (safety.level !== 'none') {
@@ -108,10 +115,10 @@ export default route({
       if (chatId && answer.trim()) {
         await store.addTurn(user.uid, chatId, [
           { role: 'user', text: message },
-          { role: 'assistant', text: answer, triage: safety.level === 'none' ? null : safety.level },
+          { role: 'assistant', text: answer, triage: safety.level === 'none' ? null : safety.level, sources },
         ])
       }
-      send('done', { chatId, triage: safety.level })
+      send('done', { chatId, triage: safety.level, sources })
     } catch (err) {
       console.error('[chat] generation failed:', err)
       if (createdNow && chatId) await store.deleteChat(user.uid, chatId).catch(() => {})
