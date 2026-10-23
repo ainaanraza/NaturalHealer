@@ -11,6 +11,8 @@ import Homepage from './components/Homepage'
 import Prakriti from './components/Prakriti'
 import FloatingAIChat from './components/FloatingAIChat'
 import { VaidyaAvatar } from './components/Vaidya'
+import SitePage from './components/SitePage'
+import SiteFooter from './components/SiteFooter'
 
 function AppRoutes() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -63,6 +65,7 @@ function AppRoutes() {
 
   return (
     <>
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <Routes>
         {/* Public Routes */}
         <Route
@@ -134,9 +137,18 @@ function AppRoutes() {
           }
         />
 
-        {/* Catch all - redirect to landing */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/conditions/:conditionId" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} />} />
+        <Route path="/remedies" element={<SitePage user={user} onLogout={handleLogout} page="remedies" />} />
+        <Route path="/ingredients" element={<SitePage user={user} onLogout={handleLogout} page="ingredients" />} />
+        <Route path="/about" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="about" />} />
+        <Route path="/safety" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="safety" />} />
+        <Route path="/privacy" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="privacy" />} />
+        <Route path="/terms" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="terms" />} />
+
+        <Route path="*" element={<SitePage user={user} onLogout={handleLogout} page="not-found" />} />
       </Routes>
+
+      <SiteFooter />
       
       {/* Floating AI Chat - only show when authenticated */}
       {isAuthenticated && user && (

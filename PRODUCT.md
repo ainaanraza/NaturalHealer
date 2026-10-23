@@ -28,14 +28,14 @@ Kitchen-shelf remedies. Every remedy is built from ingredients already in an Ind
 
 ## Capabilities and Constraints
 
-- React 18 + Vite single-page app; React Router routes `/`, `/login`, `/signup`, `/forgot-password`, `/home`, `/prakriti`.
+- React 18 + Vite single-page app; React Router routes `/`, `/remedies`, `/ingredients`, `/conditions/:conditionId`, `/about`, `/safety`, `/privacy`, `/terms`, `/login`, `/signup`, `/forgot-password`, `/home`, and `/prakriti`, with a branded not-found page.
 - Serverless API on Vercel (`/api`); every request is verified against the user's Firebase ID token. See `BACKEND.md`.
 - Firebase Authentication (email/password and Google) and Firestore (profiles, favorites, prakriti results, chat history), written only by the API.
 - Google Gemini powers the AI guide, called from the server with model fallback; answers stream to the browser. A safety triage step handles emergencies without the AI.
 - Content lives in `src/data/diseases.js`: 12 conditions across respiratory, digestive, mental, skin, musculoskeletal, and chronic categories, 60 remedies in total, each with prevention tips, duration, severity, and doshas.
 - Favorites are saved to the account and cached in the browser.
 - Prakriti (dosha) self-assessment, scored on the server and used to personalise answers.
-- Not built: Terms of Service and Privacy pages, progress tracking, video content.
+- Not built: progress tracking, video content, and self-service account deletion.
 
 ## Brand Commitments
 

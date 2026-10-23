@@ -85,7 +85,7 @@ const Homepage = ({ user, onLogout, onOpenAIChat }) => {
     <div className="dashboard">
       <Navbar user={user} onLogout={onLogout} onOpenAIChat={onOpenAIChat} />
 
-      <main className="container dashboard-main">
+      <main id="main-content" tabIndex={-1} className="container dashboard-main">
         <header className="dashboard-head">
           <Mandala size={420} color="#B08D57" className="dashboard-mandala" />
           <div className="dashboard-greet">

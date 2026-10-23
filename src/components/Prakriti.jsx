@@ -129,7 +129,7 @@ export default function Prakriti({ user, onLogout, onOpenAIChat }) {
   return (
     <div className="prakriti-page">
       <Navbar user={user} onLogout={onLogout} onOpenAIChat={onOpenAIChat} />
-      <main className="container pk-main">
+      <main id="main-content" tabIndex={-1} className="container pk-main">
         <Mandala size={560} color="#B08D57" className="pk-mandala" />
 
         {mode === 'loading' && (

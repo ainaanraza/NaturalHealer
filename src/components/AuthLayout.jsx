@@ -29,7 +29,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
         </p>
       </aside>
 
-      <main className="auth-main">
+      <main id="main-content" tabIndex={-1} className="auth-main">
         <Link to="/" className="auth-brand auth-brand-mobile">
           <Logo size={30} />
           <span className="auth-wordmark">Natural Healer</span>

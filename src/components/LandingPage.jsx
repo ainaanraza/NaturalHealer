@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Navbar from './Navbar'
-import Icon, { Logo } from './Icon'
+import Icon from './Icon'
 import Vaidya, { VaidyaAvatar } from './Vaidya'
 import BotanicalPlate, { HerbMark } from './Botanicals'
 import { HerbPlates, ClayBowl } from './Herbs'
@@ -124,9 +124,7 @@ export default function LandingPage({ user, onLogout, onOpenAIChat }) {
   }
 
   const pickResult = (disease) => {
-    pickBed(disease.category)
-    setQuery('')
-    requestAnimationFrame(showLedger)
+    navigate(`/conditions/${disease.id}`)
   }
 
   const pickIngredient = (id) => {
@@ -156,7 +154,7 @@ export default function LandingPage({ user, onLogout, onOpenAIChat }) {
     <div className="landing" ref={rootRef}>
       <Navbar user={user} onLogout={onLogout} onOpenAIChat={onOpenAIChat} overHero />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {/* Hero */}
         <section className="hero" ref={heroRef} aria-labelledby="hero-title">
           <div className="hero-botanical hero-botanical-left" aria-hidden="true">
@@ -417,18 +415,6 @@ export default function LandingPage({ user, onLogout, onOpenAIChat }) {
         </section>
       </main>
 
-      <footer className="footer">
-        <div className="container footer-inner">
-          <span className="footer-brand">
-            <Logo size={30} />
-            <span className="footer-name">Natural Healer</span>
-          </span>
-          <p className="footer-note">
-            Educational information, not medical advice. Consult a qualified practitioner before starting a new remedy.
-          </p>
-          <p className="footer-credit">Made by #AbdullahSlash</p>
-        </div>
-      </footer>
     </div>
   )
 }

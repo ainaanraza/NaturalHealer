@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Icon from './Icon'
 import { HerbMark } from './Botanicals'
 import { ingredientsFor, bedFor } from '../data/kitchen'
@@ -99,6 +100,7 @@ function RemedyPanel({ disease, onContinue, continueLabel }) {
         {continueLabel}
         <Icon name="arrowRight" size={18} className="btn-arrow" />
       </button>
+      <Link className="ledger-full-link" to={`/conditions/${disease.id}`}>Open the full condition page <Icon name="arrowRight" size={16} /></Link>
     </div>
   )
 }
