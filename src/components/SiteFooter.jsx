@@ -13,6 +13,8 @@ export default function SiteFooter() {
         </Link>
         <p className="site-footer-note">General wellness information, not medical advice. For urgent symptoms, seek medical care.</p>
         <nav className="site-footer-links" aria-label="Footer">
+          <Link to="/remedies">Materia medica</Link>
+          <Link to="/ingredients">Ingredients</Link>
           <Link to="/about">About</Link>
           <Link to="/safety">Safety</Link>
           <Link to="/privacy">Privacy</Link>
