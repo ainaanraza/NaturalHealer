@@ -4,6 +4,7 @@ import Navbar from './Navbar'
 import Icon from './Icon'
 import BotanicalPlate from './Botanicals'
 import { herbs, herbById } from '../data/knowledge/herbs'
+import enrichment from '../data/knowledge/enrichment'
 import { CAUTION_GROUPS, DRUG_CLASSES, EVIDENCE_LEVELS, GLOSSARY } from '../data/knowledge/vocabulary'
 import { shelfInUse } from '../data/kitchen'
 import { diseases } from '../data/diseases'
@@ -14,6 +15,37 @@ import '../styles/Knowledge.css'
 const PLATES = new Set(['tulsi', 'saunf', 'brahmi', 'haldi', 'adrak', 'neem'])
 
 const KIND_LABEL = { herb: 'Herb', spice: 'Spice', food: 'Food', formulation: 'Classical formulation' }
+
+const LANGUAGE = { hi: 'Hindi', sa: 'Sanskrit', mr: 'Marathi', bn: 'Bengali', gu: 'Gujarati', pa: 'Punjabi', ta: 'Tamil', te: 'Telugu', kn: 'Kannada', ml: 'Malayalam', ur: 'Urdu' }
+
+// Names and botany from openly licensed sources (Wikidata CC0, Kew WCVP CC BY 4.0)
+function NamesAndBotany({ id }) {
+  const e = enrichment.herbs[id]
+  if (!e) return null
+  const labels = Object.entries(e.wikidata?.labels || {}).filter(([lang]) => LANGUAGE[lang])
+  const b = e.botanical
+  return (
+    <section className="kb-section">
+      <h2>Names and botany</h2>
+      {labels.length > 0 && (
+        <ul className="kb-langs">
+          {labels.map(([lang, label]) => <li key={lang}><span>{LANGUAGE[lang]}</span><strong lang={lang}>{label}</strong></li>)}
+        </ul>
+      )}
+      {b && (
+        <dl className="kb-amount">
+          <div><dt>Accepted name</dt><dd><em>{b.acceptedWithAuthor}</em></dd></div>
+          {b.family && <div><dt>Family</dt><dd>{b.family}</dd></div>}
+          {b.synonyms.length > 0 && <div><dt>Older names</dt><dd className="kb-synonyms">{b.synonyms.slice(0, 6).map(n => <em key={n}>{n}</em>)}</dd></div>}
+        </dl>
+      )}
+      <p className="kb-note">
+        Names from {e.wikidata ? <a href={`https://www.wikidata.org/wiki/${e.wikidata.qid}`} target="_blank" rel="noreferrer">Wikidata</a> : 'Wikidata'} (CC0)
+        {b && <>; botany from <a href={`https://www.gbif.org/species/${b.gbifKey}`} target="_blank" rel="noreferrer">the World Checklist of Vascular Plants, Royal Botanic Gardens, Kew</a> (CC BY 4.0)</>}.
+      </p>
+    </section>
+  )
+}
 
 function DraftNotice({ many = false }) {
   return (
@@ -113,6 +145,8 @@ function HerbDetail({ herb, user, onOpenAIChat }) {
         </dl>
       </section>
 
+      <NamesAndBotany id={herb.id} />
+
       <div className="kb-two">
         <section className="kb-section">
           <h2>Actions</h2>
@@ -174,7 +208,12 @@ function HerbDetail({ herb, user, onOpenAIChat }) {
       <section className="kb-section">
         <h2>Sources</h2>
         <ul className="kb-sources">
-          {herb.sources.map(s => <li key={`${s.title}${s.detail || ''}`}>{s.title}{s.detail ? `: ${s.detail}` : ''}</li>)}
+          {herb.sources.map(s => (
+            <li key={`${s.title}${s.detail || ''}`}>
+              {s.url ? <a href={s.url} target="_blank" rel="noreferrer">{s.title}</a> : s.title}
+              {s.detail ? ` (${s.detail})` : ''}
+            </li>
+          ))}
         </ul>
         <p className="kb-note">Sources are named at the level we are sure of. Exact passages will be added when the entry is reviewed.</p>
       </section>

@@ -37,7 +37,7 @@ firestore.rules browsers may read their own data and never write
 vercel.json     function limits and SPA rewrites
 ```
 
-Further reading: [BACKEND.md](BACKEND.md) (API, data model, deployment), [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md) (content schema, editorial rules, retrieval), [DESIGN.md](DESIGN.md) (design system), [PRODUCT.md](PRODUCT.md) (who it is for and why).
+Further reading: [BACKEND.md](BACKEND.md) (API, data model, deployment), [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md) (content schema, editorial rules, retrieval), [KNOWLEDGE_SOURCES.md](KNOWLEDGE_SOURCES.md) (outside sources, licences, unification plan), [DESIGN.md](DESIGN.md) (design system), [PRODUCT.md](PRODUCT.md) (who it is for and why).
 
 ## Getting started
 
@@ -64,6 +64,7 @@ Use `npm run dev:api` instead to run against real Firestore and Firebase Auth.
 | `npm run dev:api:memory` | Local API with in-memory data and a fake user |
 | `npm test` | Server tests |
 | `npm run build` | Production build of the site |
+| `npm run kb:enrich` | Refresh botanical names and Indian-language names from Kew and Wikidata |
 | `npm run migrate:chats` | Copy chats from the old layout (dry run; add `-- --write`) |
 
 ## Environment variables

@@ -170,3 +170,24 @@
   .kb-two { grid-template-columns: 1fr; }
   .kb-cautions li { grid-template-columns: 1fr; }
 }
+
+.kb-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  list-style: none;
+}
+
+.kb-langs li {
+  display: grid;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.kb-langs span { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.kb-langs strong { font-family: "Mukta", var(--font-body); font-weight: 600; color: var(--leaf-900); }
+.kb-synonyms { display: flex; flex-wrap: wrap; gap: 4px 10px; font-weight: 500; }
+.kb-note a { color: var(--leaf-700); }

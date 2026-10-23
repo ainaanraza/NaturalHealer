@@ -12,6 +12,11 @@ const PUBMED = (q) => `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponen
 const BPN = { kind: 'classical', title: 'Bhavaprakasha Nighantu' }
 const API = { kind: 'pharmacopoeia', title: 'The Ayurvedic Pharmacopoeia of India, Part I' }
 
+// Safety references. NCCIH fact sheets are public domain (US government); LiverTox is
+// NIH's reference on liver injury. Notes below are written in our own words.
+const NCCIH = (slug, name, updated) => ({ kind: 'safety', title: `NCCIH: ${name}: Usefulness and Safety`, detail: `Last updated ${updated}`, url: `https://www.nccih.nih.gov/health/${slug}` })
+const LIVERTOX = (path, name) => ({ kind: 'safety', title: `LiverTox (NIH): ${name}`, url: `https://www.ncbi.nlm.nih.gov/books/${path}/` })
+
 const draft = { status: 'draft', reviewer: null, reviewedAt: null }
 
 export const herbs = [
@@ -48,15 +53,16 @@ export const herbs = [
     cautions: [
       { group: 'gallstones', note: 'Avoid medicinal amounts with gallstones or bile duct obstruction.' },
       { group: 'surgery', note: 'Stop supplements two weeks before surgery.' },
-      { group: 'liver', note: 'Rare liver injury has been reported with concentrated turmeric and curcumin supplements.' },
-      { group: 'pregnancy', note: 'Culinary amounts are fine; avoid supplements.' },
+      { group: 'liver', note: 'Liver injury has been reported with turmeric and curcumin supplements, especially products made to be highly absorbed. Stop and see a doctor if you notice tiredness, nausea, poor appetite, dark urine or yellowing of the skin or eyes.' },
+      { group: 'pregnancy', note: 'Culinary amounts are fine; turmeric supplements may be unsafe in pregnancy.' },
+      { group: 'breastfeeding', note: 'Little is known about amounts above those in food while breastfeeding; keep to culinary use.' },
     ],
     interactions: [
       { drugClass: 'anticoagulants', effect: 'Supplements may increase bleeding risk with blood thinners.', level: 'caution' },
       { drugClass: 'antidiabetics', effect: 'May lower blood sugar further.', level: 'caution' },
     ],
-    evidence: { level: 'moderate-human', summary: 'Curcumin has been tested in many human trials, especially for knee osteoarthritis pain, with modest benefits in several. Absorption from plain turmeric is low.', pubmedQuery: PUBMED('curcumin randomized controlled trial osteoarthritis') },
-    sources: [BPN, API],
+    evidence: { level: 'limited-human', summary: 'Many human trials, especially for knee osteoarthritis pain, look promising, but higher-quality studies are needed before firm conclusions. Absorption from plain turmeric is low.', pubmedQuery: PUBMED('curcumin randomized controlled trial osteoarthritis') },
+    sources: [BPN, API, NCCIH('turmeric', 'Turmeric', 'April 2025'), LIVERTOX('NBK548561', 'Turmeric')],
     review: draft,
   },
   {
@@ -72,13 +78,14 @@ export const herbs = [
       { group: 'gerd', note: 'Large amounts can worsen heartburn and acidity.' },
       { group: 'bleeding-disorder', note: 'Use medicinal amounts carefully with bleeding disorders.' },
       { group: 'pregnancy', note: 'Small amounts are widely used for morning sickness; check with a doctor before regular use.' },
+      { group: 'breastfeeding', note: 'Little is known about ginger supplements while breastfeeding; keep to food amounts.' },
     ],
     interactions: [
       { drugClass: 'anticoagulants', effect: 'High amounts may add to the effect of blood thinners.', level: 'caution' },
       { drugClass: 'antidiabetics', effect: 'May lower blood sugar slightly.', level: 'caution' },
     ],
-    evidence: { level: 'moderate-human', summary: 'Several human trials support ginger for nausea, including pregnancy-related nausea. Evidence for other uses is weaker.', pubmedQuery: PUBMED('ginger nausea randomized controlled trial') },
-    sources: [BPN, API],
+    evidence: { level: 'moderate-human', summary: 'Human research supports ginger for nausea and vomiting in pregnancy, and it may ease menstrual cramps. It has mostly not helped motion sickness, and evidence for other uses is weaker.', pubmedQuery: PUBMED('ginger nausea randomized controlled trial') },
+    sources: [BPN, API, NCCIH('ginger', 'Ginger', 'February 2025'), LIVERTOX('NBK600585', 'Ginger')],
     review: draft,
   },
   {
@@ -148,16 +155,18 @@ export const herbs = [
     kitchenUse: 'A teaspoon of seeds soaked overnight and eaten in the morning, or cooked into dal and vegetables.',
     typicalUse: { forms: ['Soaked seeds', 'Powder', 'Leaves as a vegetable'], adultAmount: '5–10 g of seeds a day', note: null },
     cautions: [
-      { group: 'pregnancy', note: 'Avoid medicinal amounts in pregnancy (may stimulate the uterus).' },
-      { group: 'allergy', note: 'Can cross-react in people allergic to peanuts or chickpeas.' },
-      { group: 'diabetes', note: 'Can lower blood sugar; monitor if you have diabetes.' },
+      { group: 'pregnancy', note: 'Not safe in pregnancy in amounts above those in food; its use has been linked to birth defects.' },
+      { group: 'breastfeeding', note: 'Little is known about amounts above those in food while breastfeeding.' },
+      { group: 'children', note: 'Food amounts are considered safe; larger amounts have not been shown to be safe for children.' },
+      { group: 'allergy', note: 'Can cause allergic reactions, sometimes serious, and may cross-react with peanut or chickpea allergy.' },
+      { group: 'diabetes', note: 'Large amounts can lower blood sugar too far; monitor if you have diabetes.' },
     ],
     interactions: [
       { drugClass: 'antidiabetics', effect: 'May lower blood sugar further; monitor closely.', level: 'caution' },
       { drugClass: 'anticoagulants', effect: 'May add to the effect of blood thinners.', level: 'caution' },
     ],
-    evidence: { level: 'limited-human', summary: 'Several small human trials suggest fenugreek can lower blood sugar modestly. Results vary between studies.', pubmedQuery: PUBMED('fenugreek glycemic control randomized') },
-    sources: [BPN, API],
+    evidence: { level: 'limited-human', summary: 'Studies suggest fenugreek may lower blood sugar in type 2 diabetes, but many were not of high quality. Its effect on breast milk supply is uncertain.', pubmedQuery: PUBMED('fenugreek glycemic control randomized') },
+    sources: [BPN, API, NCCIH('fenugreek', 'Fenugreek', 'February 2025'), LIVERTOX('NBK548826', 'Fenugreek')],
     review: draft,
   },
   {
@@ -171,13 +180,14 @@ export const herbs = [
     typicalUse: { forms: ['Bark in cooking', 'Tea', 'Powder'], adultAmount: '1–2 g of powder a day', note: 'Most shop "cinnamon" is cassia, which contains coumarin; large daily amounts of cassia are not advised.' },
     cautions: [
       { group: 'liver', note: 'Large daily amounts of cassia cinnamon contain coumarin, which can harm the liver.' },
-      { group: 'pregnancy', note: 'Culinary amounts are fine; avoid concentrated preparations.' },
+      { group: 'pregnancy', note: 'Food amounts appear safe; larger amounts of Ceylon cinnamon are considered unsafe in pregnancy.' },
+      { group: 'skin-use', note: 'Cinnamon oil or powder on the skin can cause irritation.' },
     ],
     interactions: [
       { drugClass: 'antidiabetics', effect: 'May lower blood sugar further.', level: 'caution' },
     ],
-    evidence: { level: 'limited-human', summary: 'Human trials on blood sugar have mixed results. Not established as a treatment.', pubmedQuery: PUBMED('cinnamon glycemic control meta-analysis') },
-    sources: [BPN, API],
+    evidence: { level: 'limited-human', summary: 'Research does not clearly support cinnamon for any health condition; results on blood sugar are mixed.', pubmedQuery: PUBMED('cinnamon glycemic control meta-analysis') },
+    sources: [BPN, API, NCCIH('cinnamon', 'Cinnamon', 'November 2024'), LIVERTOX('NBK623885', 'Cinnamon')],
     review: draft,
   },
   {
@@ -289,19 +299,23 @@ export const herbs = [
     typicalUse: { forms: ['Root powder in milk', 'Capsules'], adultAmount: '3–6 g of powder a day', note: 'Leaf products differ from root; use root.' },
     cautions: [
       { group: 'pregnancy', note: 'Avoid in pregnancy.' },
-      { group: 'thyroid', note: 'May raise thyroid hormone levels; avoid with hyperthyroidism.' },
-      { group: 'autoimmune', note: 'May stimulate the immune system; check first with autoimmune conditions.' },
+      { group: 'breastfeeding', note: 'Do not use while breastfeeding.' },
+      { group: 'thyroid', note: 'Not recommended with thyroid disorders; it may raise thyroid hormone levels.' },
+      { group: 'autoimmune', note: 'Not recommended with autoimmune conditions.' },
+      { group: 'hormone-sensitive', note: 'May raise testosterone; avoid with hormone-sensitive prostate cancer.' },
       { group: 'liver', note: 'Rare cases of liver injury have been reported with supplements.' },
-      { group: 'surgery', note: 'Stop two weeks before surgery (sedative effect).' },
+      { group: 'surgery', note: 'Not recommended before surgery; stop at least two weeks ahead.' },
     ],
     interactions: [
       { drugClass: 'sedatives', effect: 'May add to drowsiness from sleeping pills and sedatives.', level: 'caution' },
       { drugClass: 'thyroid', effect: 'May add to thyroid hormone medicine.', level: 'caution' },
       { drugClass: 'immunosuppressants', effect: 'May work against immune-suppressing medicines.', level: 'avoid' },
       { drugClass: 'antidiabetics', effect: 'May lower blood sugar further.', level: 'caution' },
+      { drugClass: 'antihypertensives', effect: 'May interact with blood pressure medicines.', level: 'caution' },
+      { drugClass: 'anticonvulsants', effect: 'May interact with anti-seizure medicines.', level: 'caution' },
     ],
-    evidence: { level: 'limited-human', summary: 'Several small human trials suggest benefits for stress and sleep. Studies are short, and products vary.', pubmedQuery: PUBMED('Withania somnifera randomized controlled trial stress') },
-    sources: [BPN, API],
+    evidence: { level: 'limited-human', summary: 'Some preparations may help with insomnia and stress; the evidence on anxiety is unclear. Studies are short, and products vary.', pubmedQuery: PUBMED('Withania somnifera randomized controlled trial stress') },
+    sources: [BPN, API, NCCIH('ashwagandha', 'Ashwagandha', 'March 2023'), LIVERTOX('NBK548536', 'Ashwagandha')],
     review: draft,
   },
   {
@@ -323,7 +337,7 @@ export const herbs = [
       { drugClass: 'thyroid', effect: 'May change thyroid medicine needs.', level: 'caution' },
     ],
     evidence: { level: 'limited-human', summary: 'Several small human trials suggest modest effects on memory over weeks of use.', pubmedQuery: PUBMED('Bacopa monnieri memory randomized') },
-    sources: [BPN, API],
+    sources: [BPN, API, LIVERTOX('n/livertox/Bacopa', 'Bacopa monnieri')],
     review: draft,
   },
   {
@@ -345,8 +359,8 @@ export const herbs = [
       { drugClass: 'immunosuppressants', effect: 'May work against immune-suppressing medicines.', level: 'avoid' },
       { drugClass: 'antidiabetics', effect: 'May lower blood sugar further.', level: 'caution' },
     ],
-    evidence: { level: 'limited-human', summary: 'Small human studies only. Reports of liver injury have prompted caution.', pubmedQuery: PUBMED('Tinospora cordifolia clinical') },
-    sources: [BPN, API],
+    evidence: { level: 'limited-human', summary: 'Small human studies only. Reports of liver injury, ranging from mild to severe, have prompted caution.', pubmedQuery: PUBMED('Tinospora cordifolia clinical') },
+    sources: [BPN, API, LIVERTOX('NBK608429', 'Tinospora')],
     review: draft,
   },
   {
@@ -379,12 +393,13 @@ export const herbs = [
     actions: ['Soothes the throat', 'Soothing to the stomach lining', 'Rejuvenative (rasayana)'],
     traditionalUses: ['Sore throat and dry cough', 'Hoarse voice', 'Acidity'],
     kitchenUse: 'A small piece of root chewed or simmered in tea for a sore throat, for a few days only.',
-    typicalUse: { forms: ['Root stick', 'Powder', 'Tea'], adultAmount: '2–4 g of powder a day, for short periods', note: 'Long or heavy use is unsafe because of glycyrrhizin.' },
+    typicalUse: { forms: ['Root stick', 'Powder', 'Tea'], adultAmount: '2–4 g of powder a day, for short periods', note: 'Long or heavy use is unsafe because of glycyrrhizin. Deglycyrrhizinated licorice (DGL) products remove it.' },
     cautions: [
-      { group: 'hypertension', note: 'Raises blood pressure and lowers potassium with regular use. Avoid with high blood pressure.' },
-      { group: 'heart', note: 'Avoid with heart disease.' },
+      { group: 'hypertension', note: 'Raises blood pressure and lowers potassium with regular use. Even small amounts have caused serious problems in people with high blood pressure or a salty diet. Avoid.' },
+      { group: 'heart', note: 'Large or long use can cause an irregular heartbeat and, rarely, cardiac arrest. Avoid with heart disease.' },
       { group: 'kidney', note: 'Avoid with kidney disease.' },
-      { group: 'pregnancy', note: 'Avoid in pregnancy.' },
+      { group: 'pregnancy', note: 'Avoid in pregnancy; large amounts are linked to earlier delivery.' },
+      { group: 'breastfeeding', note: 'Little is known about safety while breastfeeding; avoid.' },
     ],
     interactions: [
       { drugClass: 'antihypertensives', effect: 'Works against blood pressure medicines.', level: 'avoid' },
@@ -392,8 +407,8 @@ export const herbs = [
       { drugClass: 'corticosteroids', effect: 'Increases steroid effects and side effects.', level: 'avoid' },
       { drugClass: 'heart-rhythm', effect: 'Low potassium raises the risk with digoxin.', level: 'avoid' },
     ],
-    evidence: { level: 'moderate-human', summary: 'Its side effects (high blood pressure, low potassium) are well documented in humans. Evidence for benefits is limited.', pubmedQuery: PUBMED('glycyrrhizin hypokalemia hypertension') },
-    sources: [BPN, API],
+    evidence: { level: 'moderate-human', summary: 'Its side effects (high blood pressure, low potassium, heart rhythm problems) are well documented in humans. Evidence for benefits is limited; a licorice gargle may ease sore throat after surgery.', pubmedQuery: PUBMED('glycyrrhizin hypokalemia hypertension') },
+    sources: [BPN, API, NCCIH('licorice-root', 'Licorice Root', 'April 2025')],
     review: draft,
   },
   {
@@ -458,7 +473,7 @@ export const herbs = [
       { drugClass: 'antidiabetics', effect: 'May cause low blood sugar together with diabetes medicines.', level: 'caution' },
     ],
     evidence: { level: 'limited-human', summary: 'Human trials on blood sugar show small and inconsistent effects.', pubmedQuery: PUBMED('Momordica charantia glycemic randomized') },
-    sources: [BPN],
+    sources: [BPN, LIVERTOX('NBK590483', 'Bitter Melon')],
     review: draft,
   },
   {
@@ -507,16 +522,19 @@ export const herbs = [
     kitchenUse: 'Cooked in food, or one clove crushed into warm food.',
     typicalUse: { forms: ['Raw or cooked cloves'], adultAmount: '1–2 cloves a day', note: null },
     cautions: [
-      { group: 'surgery', note: 'Stop garlic supplements a week before surgery (bleeding risk).' },
+      { group: 'surgery', note: 'Garlic supplements may increase bleeding; stop them at least a week before surgery and tell your surgeon.' },
       { group: 'gerd', note: 'Can worsen heartburn.' },
       { group: 'bleeding-disorder', note: 'Avoid supplements with bleeding disorders.' },
+      { group: 'pregnancy', note: 'Food amounts are fine; garlic supplements may not be safe in pregnancy.' },
+      { group: 'breastfeeding', note: 'Food amounts are fine; garlic supplements may not be safe while breastfeeding.' },
+      { group: 'skin-use', note: 'Raw garlic held on the skin can cause severe irritation and chemical burns.' },
     ],
     interactions: [
       { drugClass: 'anticoagulants', effect: 'Supplements may increase bleeding risk with blood thinners.', level: 'caution' },
       { drugClass: 'antiretrovirals', effect: 'Garlic supplements can lower levels of some HIV medicines.', level: 'avoid' },
     ],
-    evidence: { level: 'moderate-human', summary: 'Human trials suggest small reductions in blood pressure and cholesterol with garlic supplements.', pubmedQuery: PUBMED('garlic blood pressure meta-analysis') },
-    sources: [BPN, API],
+    evidence: { level: 'moderate-human', summary: 'Garlic supplements may lower total and LDL cholesterol slightly in people with high cholesterol; limited evidence suggests a small drop in high blood pressure.', pubmedQuery: PUBMED('garlic blood pressure meta-analysis') },
+    sources: [BPN, API, NCCIH('garlic', 'Garlic', 'February 2025')],
     review: draft,
   },
   {
@@ -542,24 +560,28 @@ export const herbs = [
   },
   {
     id: 'aloe',
-    name: 'Gwarpatha', hindi: 'ग्वारपाठा', sanskrit: 'Kumari, Ghritakumari', english: 'Aloe vera', latin: 'Aloe barbadensis',
+    name: 'Gwarpatha', hindi: 'ग्वारपाठा', sanskrit: 'Kumari, Ghritakumari', english: 'Aloe vera', latin: 'Aloe vera',
     kind: 'herb', part: 'Leaf gel',
     properties: { rasa: ['tikta', 'madhura'], guna: ['guru', 'snigdha'], virya: 'shita', vipaka: null, pacifies: ['pitta', 'vata'], aggravates: [] },
     actions: ['Cooling and soothing on the skin', 'Laxative (the yellow latex, not the gel)'],
     traditionalUses: ['Minor burns and sunburn (gel on skin)', 'Dry skin'],
     kitchenUse: 'Clear inner gel from the leaf applied to skin. Wash off the yellow latex first.',
-    typicalUse: { forms: ['Gel on skin'], adultAmount: 'External use', note: 'Taking aloe latex by mouth is a strong laxative and is not advised.' },
+    typicalUse: { forms: ['Gel on skin'], adultAmount: 'External use', note: 'Taking aloe latex by mouth is a strong laxative and is not advised. Whole-leaf (non-decolourised) extract is classed by IARC as a possible human carcinogen; the clear gel on the skin is the safest use.' },
     cautions: [
-      { group: 'pregnancy', note: 'Do not take aloe latex or whole-leaf products by mouth in pregnancy.' },
+      { group: 'pregnancy', note: 'Aloe gel, latex or whole-leaf extract taken by mouth may be unsafe in pregnancy.' },
+      { group: 'breastfeeding', note: 'Aloe taken by mouth may be unsafe while breastfeeding.' },
+      { group: 'liver', note: 'Aloe leaf extracts taken by mouth have been linked to acute hepatitis.' },
       { group: 'kidney', note: 'Oral aloe latex can harm the kidneys with regular use.' },
       { group: 'children', note: 'Do not give aloe by mouth to children.' },
+      { group: 'skin-use', note: 'The gel is usually well tolerated, but it occasionally causes burning, itching or a rash.' },
     ],
     interactions: [
       { drugClass: 'antidiabetics', effect: 'Oral aloe may lower blood sugar further.', level: 'caution' },
       { drugClass: 'diuretics', effect: 'Oral latex can lower potassium with water pills.', level: 'caution' },
+      { drugClass: 'heart-rhythm', effect: 'Overuse of aloe latex can increase side effects of digoxin.', level: 'avoid' },
     ],
-    evidence: { level: 'limited-human', summary: 'Some human studies suggest the gel may help minor burns heal. Evidence is limited.', pubmedQuery: PUBMED('aloe vera burn healing') },
-    sources: [BPN, API],
+    evidence: { level: 'limited-human', summary: 'Clinical research suggests the gel on the skin may speed burn healing and reduce burn pain. Evidence for oral use is weak.', pubmedQuery: PUBMED('aloe vera burn healing') },
+    sources: [BPN, API, NCCIH('aloe-vera', 'Aloe Vera', 'February 2025'), LIVERTOX('NBK548634', 'Aloe Vera')],
     review: draft,
   },
   {

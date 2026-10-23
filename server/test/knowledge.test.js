@@ -101,3 +101,47 @@ test('only cited excerpts become sources, keeping their numbers', async () => {
   assert.equal(sources[0].url, passages[0].url)
   assert.equal(citedSources('No citations here.', passages).length, 0)
 })
+
+test('every plant uses its Kew-accepted botanical name', async () => {
+  const { default: enrichment } = await import('../../src/data/knowledge/enrichment.js')
+  for (const h of herbs.filter(x => x.latin && x.kind !== 'formulation')) {
+    const e = enrichment.herbs[h.id]
+    assert.ok(e?.botanical, `${h.id}: missing from enrichment; run npm run kb:enrich`)
+    const ours = h.latin.split(',')[0].trim().split(/\s+/).slice(0, 2).join(' ')
+    assert.equal(e.botanical.matchedStatus, 'ACCEPTED', `${h.id}: "${ours}" is a ${e.botanical.matchedStatus} in WCVP; accepted name is ${e.botanical.acceptedName}`)
+    assert.equal(e.botanical.acceptedName, ours, `${h.id}: name differs from WCVP`)
+  }
+})
+
+test('regional-language names and old botanical names find the right herb', () => {
+  assert.ok(herbsMentioned('மஞ்சள் பால் குடிக்கலாமா').includes('haldi'), 'Tamil name for turmeric')
+  assert.ok(retrieve('Ocimum sanctum for cough').some(c => c.entityId === 'tulsi'), 'old synonym of tulsi')
+})
+
+test('no herb repeats a caution group, and linked sources use https', () => {
+  for (const h of herbs) {
+    const groups = h.cautions.map(c => c.group)
+    assert.equal(new Set(groups).size, groups.length, `${h.id}: repeated caution group`)
+    const classes = h.interactions.map(i => i.drugClass)
+    assert.equal(new Set(classes).size, classes.length, `${h.id}: repeated interaction`)
+    for (const s of h.sources) if (s.url) assert.match(s.url, /^https:\/\//, `${h.id}: source link must be https`)
+  }
+})
+
+test('safety questions surface the cross-checked warnings', () => {
+  const text = (q) => retrieve(q).map(c => c.text).join(' ')
+  assert.match(text('is fenugreek safe in pregnancy'), /birth defects/)
+  assert.match(text('ashwagandha while breastfeeding'), /breastfeeding/i)
+  assert.match(text('aloe vera juice liver'), /hepatitis/)
+})
+
+test('every library condition has a well-formed ICD-11 code', async () => {
+  const { conditionCodes } = await import('../../src/data/knowledge/conditionCodes.js')
+  const { diseases } = await import('../../src/data/diseases.js')
+  for (const d of diseases) {
+    const c = conditionCodes[d.id]
+    assert.ok(c, `${d.id}: missing ICD-11 mapping`)
+    assert.match(c.icd11.code, /^[0-9A-Z]{4}(\.[0-9A-Z]{1,2})?$/, `${d.id}: malformed ICD-11 code`)
+    if (c.tm2Group) assert.match(c.tm2Group.range, /^S[K-R]\d\d–S[K-R][0-9A-Z]Z$/, `${d.id}: TM2 range outside SK00–SR0Z`)
+  }
+})

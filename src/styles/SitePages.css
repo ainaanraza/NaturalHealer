@@ -95,3 +95,8 @@
   .site-footer-links { grid-column: 1 / -1; justify-content: flex-start; grid-row: 3; }
   .site-footer-credit { grid-row: 4; }
 }
+.condition-codes { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: -12px 0 28px; padding: 10px 14px; border-radius: var(--r-md); background: var(--paper-2); border: 1px solid var(--line); font-size: .88rem; color: var(--ink-2); }
+.condition-codes-label { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brass-deep); }
+.condition-codes strong { color: var(--leaf-900); font-variant-numeric: tabular-nums; }
+.condition-codes-note { flex-basis: 100%; color: var(--ink-3); }
+.condition-codes a { color: var(--leaf-700); }

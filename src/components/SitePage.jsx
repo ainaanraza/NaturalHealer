@@ -6,6 +6,22 @@ import { diseases } from '../data/diseases'
 import { bedFor, beds, ingredientsFor, shelfInUse } from '../data/kitchen'
 import { severityLabels, ShelfTags } from './ConditionLedger'
 import { herbById } from '../data/knowledge/herbs'
+import { conditionCodes, ICD11_BROWSER, ICD11_RELEASE } from '../data/knowledge/conditionCodes'
+
+// WHO ICD-11 codes: the closest standard match, shown for clinicians and records
+function ConditionCodes({ id }) {
+  const c = conditionCodes[id]
+  if (!c) return null
+  return (
+    <p className="condition-codes">
+      <span className="condition-codes-label">Classification</span>
+      <span>ICD-11 <strong>{c.icd11.code}</strong> {c.icd11.title}</span>
+      {c.tm2Group && <span>Ayurveda (ICD-11 TM2): {c.tm2Group.title}, {c.tm2Group.range}</span>}
+      {c.icd11.note && <span className="condition-codes-note">{c.icd11.note}</span>}
+      <a href={ICD11_BROWSER} target="_blank" rel="noreferrer">WHO ICD-11 browser, release {ICD11_RELEASE}</a>
+    </p>
+  )
+}
 import '../styles/SitePages.css'
 
 const updated = '23 October 2026'
@@ -111,6 +127,7 @@ function ConditionPage({ user, onOpenAIChat }) {
     <p className="site-breadcrumb"><Link to="/remedies">Materia medica</Link><span>/</span>{bed.label}</p>
     <PageIntro eyebrow={`${bed.label} · ${bed.herbName}`} title={disease.title} lead={disease.desc} />
     <dl className="condition-facts"><div><dt>Typical duration</dt><dd>{disease.duration}</dd></div><div><dt>Severity</dt><dd>{severityLabels[disease.severity]}</dd></div><div><dt>Dosha noted in library</dt><dd>{disease.doshas.join(', ')}</dd></div></dl>
+    <ConditionCodes id={disease.id} />
     {disease.severity === 'serious' && <div className="site-emergency condition-warning"><Icon name="alert" size={22} /><p><strong>This condition needs medical care.</strong> Use general wellness measures only alongside professional treatment, never instead of it. <Link to="/safety">Read the safety guide</Link>.</p></div>}
     <section className="condition-section"><h2>From your kitchen shelf</h2><ShelfTags disease={disease} limit={20} /></section>
     <section className="condition-section"><h2>Remedies and supportive habits</h2><ol className="condition-remedies">{disease.remedies.map((remedy, index) => <li key={remedy}><span>{String(index + 1).padStart(2, '0')}</span><p>{remedy}</p></li>)}</ol></section>

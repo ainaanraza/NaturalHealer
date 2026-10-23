@@ -2,6 +2,7 @@
 // Each herb gives an overview chunk and a safety chunk; each condition gives one chunk.
 
 import { herbs } from '../../../src/data/knowledge/herbs.js'
+import enrichment from '../../../src/data/knowledge/enrichment.js'
 import { CAUTION_GROUPS, DRUG_CLASSES, EVIDENCE_LEVELS, term } from '../../../src/data/knowledge/vocabulary.js'
 import { diseases, aiKnowledge } from '../../../src/data/diseases.js'
 import { ingredientsFor } from '../../../src/data/kitchen.js'
@@ -55,9 +56,17 @@ function conditionText(d) {
   ].filter(Boolean).join('\n')
 }
 
+// Names from the openly licensed enrichment: regional-language names (Wikidata, CC0)
+// and botanical synonyms (Kew WCVP, CC BY 4.0), so people can ask in their own words
+export function extraNames(id) {
+  const e = enrichment.herbs[id]
+  if (!e) return []
+  return [...Object.values(e.wikidata?.labels || {}), ...(e.botanical?.synonyms || [])]
+}
+
 // Words a chunk should also be found by: every name of the herb, its uses, its cautions
 function herbKeywords(h) {
-  return [herbNames(h), h.kind, h.part, ...(h.traditionalUses || []), ...(h.actions || [])].join(' ')
+  return [herbNames(h), ...extraNames(h.id), h.kind, h.part, ...(h.traditionalUses || []), ...(h.actions || [])].join(' ')
 }
 
 export function buildCorpus() {
@@ -71,7 +80,7 @@ export function buildCorpus() {
       section: 'safety',
       title: `${h.name}: safety and interactions`,
       text: herbSafety(h),
-      keywords: `${herbNames(h)} safety side effects caution interaction ${h.cautions.map(c => `${c.group} ${CAUTION_GROUPS[c.group]}`).join(' ')} ${h.interactions.map(i => `${i.drugClass} ${DRUG_CLASSES[i.drugClass]}`).join(' ')}`,
+      keywords: `${herbNames(h)} ${extraNames(h.id).join(' ')} safety side effects caution interaction ${h.cautions.map(c => `${c.group} ${CAUTION_GROUPS[c.group]}`).join(' ')} ${h.interactions.map(i => `${i.drugClass} ${DRUG_CLASSES[i.drugClass]}`).join(' ')}`,
     })
   }
   for (const d of diseases) {

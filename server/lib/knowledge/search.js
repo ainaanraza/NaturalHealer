@@ -2,7 +2,7 @@
 // dictionary so people can ask the way they talk. No network calls: fast, free,
 // deterministic and testable. Semantic (embedding) search can be layered on later.
 
-import { buildCorpus } from './corpus.js'
+import { buildCorpus, extraNames } from './corpus.js'
 import { herbs } from '../../../src/data/knowledge/herbs.js'
 
 // Everyday words -> terms the knowledge base uses. Keys and values are matched as tokens.
@@ -94,7 +94,7 @@ export function search(query, { limit = 6 } = {}) {
 
 // Herbs whose names appear in the text (used to pull in their safety notes)
 const nameIndex = herbs.flatMap(h =>
-  [h.name, h.hindi, h.english, ...(h.sanskrit || '').split(/[,()]/), h.id.replace('-', ' ')]
+  [h.name, h.hindi, h.english, ...(h.sanskrit || '').split(/[,()]/), h.id.replace('-', ' '), ...extraNames(h.id)]
     .flatMap(n => String(n || '').split('/'))
     .map(n => n.trim().toLowerCase())
     .filter(n => n.length > 2)

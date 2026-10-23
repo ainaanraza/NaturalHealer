@@ -22,6 +22,7 @@ export const CAUTION_GROUPS = {
   'hormone-sensitive': 'Hormone-sensitive conditions',
   allergy: 'Allergies',
   'skin-infection': 'Broken or infected skin',
+  'skin-use': 'Applying to the skin',
 }
 
 export const DRUG_CLASSES = {
@@ -36,6 +37,7 @@ export const DRUG_CLASSES = {
   'heart-rhythm': 'Heart medicines such as digoxin',
   lithium: 'Lithium',
   antiretrovirals: 'HIV medicines',
+  anticonvulsants: 'Anti-seizure medicines',
   'many-medicines': 'Many medicines (changes absorption)',
 }
 

@@ -10,7 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test \"server/test/*.test.js\"",
-    "migrate:chats": "node --env-file-if-exists=.env scripts/migrate-legacy-chats.mjs"
+    "migrate:chats": "node --env-file-if-exists=.env scripts/migrate-legacy-chats.mjs",
+    "kb:enrich": "node scripts/kb/enrich.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

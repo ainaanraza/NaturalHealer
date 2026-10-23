@@ -6,9 +6,13 @@ The knowledge base is what Vanya answers from. It lives in `src/data/knowledge/`
 | --- | --- |
 | `herbs.js` | Herbs, spices and kitchen substances (27 entries) |
 | `vocabulary.js` | The fixed vocabularies entries must use, and plain-English meanings for classical terms |
+| `enrichment.js` | Generated: accepted botanical names, families and synonyms (Kew WCVP, CC BY 4.0) and names in Indian languages (Wikidata, CC0). Rebuild with `npm run kb:enrich`. |
 | `../diseases.js` | The conditions library, also searched by Vanya |
+| `conditionCodes.js` | ICD-11 codes for each condition, and the Ayurveda (TM2) group where the match is unambiguous |
 
 All entries are currently **drafts**: no qualified Ayurvedic practitioner has reviewed them yet. The site shows this on every herb page, and Vanya is told to say so when giving amounts or herb-specific advice.
+
+Where the content may come from, and how each outside source can be used under its licence, is covered in [KNOWLEDGE_SOURCES.md](KNOWLEDGE_SOURCES.md).
 
 ## Herb entry fields
 
@@ -24,7 +28,7 @@ All entries are currently **drafts**: no qualified Ayurvedic practitioner has re
 | `cautions` | `{ group, note }`, where `group` comes from `CAUTION_GROUPS` (pregnancy, children, surgery and so on) |
 | `interactions` | `{ drugClass, effect, level }`, where `drugClass` comes from `DRUG_CLASSES` and `level` is `caution` or `avoid` |
 | `evidence` | `level` from `EVIDENCE_LEVELS`, a one- or two-sentence `summary`, and a `pubmedQuery` search link |
-| `sources` | Where the information comes from (see the rules below) |
+| `sources` | Where the information comes from (see the rules below). Safety references (NCCIH, LiverTox) include a `url` and are linked on the herb page. |
 | `review` | `{ status: 'draft' or 'reviewed', reviewer, reviewedAt }` |
 
 The fixed vocabularies matter. A later safety layer will match `cautions[].group` and `interactions[].drugClass` against a person's profile (pregnancy, medicines and so on), so free text there would be silently missed.
@@ -59,5 +63,6 @@ Retrieval needs no AI calls, so it is fast, free and covered by tests (`server/t
 
 1. Copy an existing entry in `herbs.js` with a similar kind.
 2. Fill every field, following the rules above. Keep `review.status: 'draft'`.
-3. If people call it by words the dictionary does not know, add them to `SYNONYMS` in `server/lib/knowledge/search.js`.
-4. Add a retrieval case to `EXPECT` in `server/test/knowledge.test.js`, then run `npm test`.
+3. Run `npm run kb:enrich` to fetch its accepted botanical name and regional names. The tests fail if its Latin name isn't the accepted one.
+4. If people call it by words the dictionary does not know, add them to `SYNONYMS` in `server/lib/knowledge/search.js`.
+5. Add a retrieval case to `EXPECT` in `server/test/knowledge.test.js`, then run `npm test`.
