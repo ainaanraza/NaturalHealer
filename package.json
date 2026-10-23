@@ -1,0 +1,29 @@
+{
+  "name": "natural-healer-react",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "node --env-file-if-exists=.env server/dev.js",
+    "dev:api:memory": "node --env-file-if-exists=.env --env-file-if-exists=.env.memory server/dev.js",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test \"server/test/*.test.js\"",
+    "migrate:chats": "node --env-file-if-exists=.env scripts/migrate-legacy-chats.mjs"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "firebase": "^12.5.0",
+    "firebase-admin": "^13.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.9.5"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=22.9"
+  }
+}

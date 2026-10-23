@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// All writes go through the API (/api), which uses the Admin SDK and is not bound by
+// these rules. Browsers may only read their own profile and conversations, and can
+// never write: that keeps chat history, favorites and prakriti results trustworthy
+// and stops anyone spending the AI budget by writing fake data.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+
+      match /chats/{chatId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+
+        match /messages/{messageId} {
+          allow read: if request.auth != null && request.auth.uid == uid;
+          allow write: if false;
+        }
+      }
+    }
+
+    // Server-only collections: rate limits, safety events, and the legacy chat layout
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
