@@ -1,4 +1,4 @@
-import { diseases } from './diseases'
+import { diseases } from './diseases.js'
 
 // Each category is anchored to one classical herb, shown as a botanical plate
 // (see components/Botanicals.jsx). Compounds are the constituents most often
