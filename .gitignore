@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Secrets: never commit real keys (see .env.example)
+.env
+.env.local
+.env.*.local
+
+# Platform and editor state
+.vercel/
+.DS_Store
+Thumbs.db
+*.log
+
+# Local tool folders
+.claude/
+.qodo/
+.impeccable/
+plans/
+
+# Private project documents
+Documents/
