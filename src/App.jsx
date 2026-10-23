@@ -12,6 +12,7 @@ import Prakriti from './components/Prakriti'
 import FloatingAIChat from './components/FloatingAIChat'
 import { VaidyaAvatar } from './components/Vaidya'
 import SitePage from './components/SitePage'
+import HerbPages from './components/HerbPages'
 import SiteFooter from './components/SiteFooter'
 
 function AppRoutes() {
@@ -140,6 +141,8 @@ function AppRoutes() {
         <Route path="/conditions/:conditionId" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} />} />
         <Route path="/remedies" element={<SitePage user={user} onLogout={handleLogout} page="remedies" />} />
         <Route path="/ingredients" element={<SitePage user={user} onLogout={handleLogout} page="ingredients" />} />
+        <Route path="/herbs" element={<HerbPages user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} />} />
+        <Route path="/herbs/:herbId" element={<HerbPages user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} />} />
         <Route path="/about" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="about" />} />
         <Route path="/safety" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="safety" />} />
         <Route path="/privacy" element={<SitePage user={user} onLogout={handleLogout} onOpenAIChat={() => setIsAIChatOpen(true)} page="privacy" />} />

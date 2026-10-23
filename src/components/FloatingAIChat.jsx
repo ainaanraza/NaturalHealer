@@ -101,7 +101,7 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
   const loadChatSession = async (sessionId) => {
     const result = await getChatSessionMessages(sessionId)
     if (result.success) {
-      setMessages([greetingMessage(), ...result.messages.map(m => ({ role: m.role, text: m.text, triage: m.triage, timestamp: m.timestamp }))])
+      setMessages([greetingMessage(), ...result.messages.map(m => ({ role: m.role, text: m.text, triage: m.triage, sources: m.sources, timestamp: m.timestamp }))])
       setCurrentSessionId(sessionId)
       setShowHistory(false)
     } else {
@@ -140,6 +140,7 @@ export default function FloatingAIChat({ isOpen, onClose, user }) {
         if (event.type === 'meta' && event.chatId) setCurrentSessionId(event.chatId)
         if (event.type === 'meta' && event.triage !== 'none') patchAnswer(() => ({ triage: event.triage }))
         if (event.type === 'delta') patchAnswer(m => ({ text: m.text + event.text }))
+        if (event.type === 'done') patchAnswer(() => ({ sources: event.sources || [] }))
       })
       patchAnswer(() => ({ streaming: false }))
       if (result.chatId) loadChatSessions()

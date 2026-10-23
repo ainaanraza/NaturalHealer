@@ -285,3 +285,51 @@
   background: var(--leaf-500);
   animation: typing 1.1s ease-in-out infinite;
 }
+
+/* ---------- Knowledge base citations ---------- */
+
+.msg-body sup.cite {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  margin: 0 1px;
+  padding: 0 4px;
+  border-radius: 5px;
+  background: var(--leaf-100);
+  color: var(--leaf-800);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 2px;
+}
+
+.msg-sources {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+  font-size: 0.85rem;
+}
+
+.msg-sources-title {
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.msg-sources ol { display: grid; gap: 3px; padding-left: 20px; }
+.msg-sources li::marker { color: var(--leaf-700); font-weight: 700; font-size: 0.8rem; }
+.msg-sources a { color: var(--leaf-800); font-weight: 600; text-underline-offset: 2px; }
+
+.msg-source-draft {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--haldi-soft);
+  color: #6B4A06;
+  font-size: 0.7rem;
+  font-weight: 700;
+}

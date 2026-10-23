@@ -13,6 +13,8 @@ function formatInlineStyles(text) {
   text = text.replace(/\*(.+?)\*/g, '<em>$1</em>')
   text = text.replace(/_(.+?)_/g, '<em>$1</em>')
   text = text.replace(/`(.+?)`/g, '<code>$1</code>')
+  // Knowledge base citations such as [2] become small reference markers
+  text = text.replace(/\[(\d{1,2})\]/g, '<sup class="cite">$1</sup>')
 
   return text
 }

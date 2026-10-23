@@ -8,7 +8,8 @@ Natural Healer offers general wellness information, not medical advice.
 
 - **Remedy library:** 12 everyday conditions and 60 kitchen remedies. Each condition has severity, typical duration, doshas and prevention, and serious ones are flagged for a doctor.
 - **Materia medica:** each category is anchored to a herb, shown as a botanical plate with its species, the plant part used and the compounds researchers study.
-- **AI guide (Vanya):** answers stream in from Google Gemini on the server, grounded in the library and personalised by your prakriti. Conversations are saved to your account.
+- **Knowledge base:** 27 herb and kitchen-substance entries with classical properties, typical adult amounts, cautions, medicine interactions and an honest evidence rating. They're drafts awaiting practitioner review, and the site says so. See [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md).
+- **AI guide (Vanya):** answers stream in from Google Gemini on the server, grounded in the knowledge base with numbered citations, and personalised by your prakriti. Conversations are saved to your account.
 - **Safety triage:** emergency signs (for example chest pain, trouble breathing or thoughts of self-harm) get an immediate "seek care now" reply instead of a remedy.
 - **Prakriti assessment:** 12 questions scored on the server, with balancing guidance.
 - **Accounts:** email/password and Google sign-in through Firebase. Favorites and history sync across devices.
@@ -30,12 +31,13 @@ server/lib/     auth, data store, rate limits, safety triage, prompt, Gemini, pr
 server/test/    server tests (node:test)
 server/dev.js   local API server that mirrors Vercel's routing
 scripts/        one-off maintenance scripts (legacy chat migration)
-src/            React app: components/, styles/, services/, data/, hooks/
+server/lib/knowledge/  corpus building and retrieval for the knowledge base
+src/            React app: components/, styles/, services/, data/ (incl. data/knowledge/), hooks/
 firestore.rules browsers may read their own data and never write
 vercel.json     function limits and SPA rewrites
 ```
 
-Further reading: [BACKEND.md](BACKEND.md) (API, data model, deployment), [DESIGN.md](DESIGN.md) (design system), [PRODUCT.md](PRODUCT.md) (who it is for and why).
+Further reading: [BACKEND.md](BACKEND.md) (API, data model, deployment), [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md) (content schema, editorial rules, retrieval), [DESIGN.md](DESIGN.md) (design system), [PRODUCT.md](PRODUCT.md) (who it is for and why).
 
 ## Getting started
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import Icon from './Icon'
 import { VaidyaAvatar } from './Vaidya'
 import { formatMessageText } from '../utils/formatMessage'
@@ -91,7 +92,22 @@ export default function ChatThread({
                   <span className="msg-mark" aria-hidden="true">
                     {msg.isError ? <Icon name="alert" size={16} strokeWidth={2} /> : <VaidyaAvatar size={34} />}
                   </span>
-                  <div className="msg-body">{formatMessageText(msg.text)}</div>
+                  <div className="msg-body">
+                    {formatMessageText(msg.text)}
+                    {msg.sources?.length > 0 && (
+                      <div className="msg-sources">
+                        <p className="msg-sources-title">Sources from the knowledge base</p>
+                        <ol>
+                          {msg.sources.map(s => (
+                            <li key={s.n} value={s.n}>
+                              <Link to={s.url}>{s.title}</Link>
+                              {s.review === 'draft' && <span className="msg-source-draft">Draft</span>}
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             )}

@@ -34,8 +34,8 @@ export default function Navbar({ user, onLogout, onOpenAIChat, overHero = false 
   const initial = user?.displayName?.charAt(0).toUpperCase() || 'U'
 
   const links = isAuthenticated
-    ? [{ to: '/home', label: 'My remedies' }, { to: '/remedies', label: 'Materia medica' }, { to: '/prakriti', label: 'Prakriti' }]
-    : [{ to: '/remedies', label: 'Materia medica' }, { to: '/ingredients', label: 'Ingredients' }, { to: '/safety', label: 'Safety' }]
+    ? [{ to: '/home', label: 'My remedies' }, { to: '/remedies', label: 'Materia medica' }, { to: '/herbs', label: 'Herbs' }, { to: '/prakriti', label: 'Prakriti' }]
+    : [{ to: '/remedies', label: 'Materia medica' }, { to: '/herbs', label: 'Herbs' }, { to: '/ingredients', label: 'Ingredients' }, { to: '/safety', label: 'Safety' }]
 
   const isCurrent = (to) => to === location.pathname
 

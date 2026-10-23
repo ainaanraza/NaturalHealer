@@ -5,6 +5,7 @@ import Icon from './Icon'
 import { diseases } from '../data/diseases'
 import { bedFor, beds, ingredientsFor, shelfInUse } from '../data/kitchen'
 import { severityLabels, ShelfTags } from './ConditionLedger'
+import { herbById } from '../data/knowledge/herbs'
 import '../styles/SitePages.css'
 
 const updated = '23 October 2026'
@@ -96,7 +97,7 @@ function LibraryPage() {
 function IngredientsPage() {
   return <>
     <PageIntro eyebrow="Kitchen shelf" title="Ingredients already close at hand." lead="See which conditions in the library mention each ingredient. Their presence in a remedy is not evidence that the remedy is effective or right for you." />
-    <ul className="ingredient-directory">{shelfInUse.map(item => <li key={item.id}><article><div className="ingredient-directory-head"><span className="ingredient-initial" aria-hidden="true">{item.name.slice(0, 1)}</span><div><h2>{item.name}</h2>{item.english && <p>{item.english}</p>}</div><span className="hi" lang="hi">{item.hindi}</span></div><p className="ingredient-used">Mentioned in {item.conditions.length} {item.conditions.length === 1 ? 'condition' : 'conditions'}</p><ul className="ingredient-condition-links">{item.conditions.map(id => { const disease = diseases.find(entry => entry.id === id); return disease && <li key={id}><Link to={`/conditions/${id}`}>{disease.title}<Icon name="arrowRight" size={15} /></Link></li> })}</ul></article></li>)}</ul>
+    <ul className="ingredient-directory">{shelfInUse.map(item => <li key={item.id}><article><div className="ingredient-directory-head"><span className="ingredient-initial" aria-hidden="true">{item.name.slice(0, 1)}</span><div><h2>{herbById[item.id] ? <Link to={`/herbs/${item.id}`}>{item.name}</Link> : item.name}</h2>{item.english && <p>{item.english}</p>}</div><span className="hi" lang="hi">{item.hindi}</span></div><p className="ingredient-used">Mentioned in {item.conditions.length} {item.conditions.length === 1 ? 'condition' : 'conditions'}</p><ul className="ingredient-condition-links">{item.conditions.map(id => { const disease = diseases.find(entry => entry.id === id); return disease && <li key={id}><Link to={`/conditions/${id}`}>{disease.title}<Icon name="arrowRight" size={15} /></Link></li> })}</ul></article></li>)}</ul>
     <p className="site-legal-note"><Icon name="info" size={18} /><span>Ingredient names are matched from the current reference library. Ask a qualified clinician or pharmacist about interactions, allergies, pregnancy, and use with medicines.</span></p>
   </>
 }

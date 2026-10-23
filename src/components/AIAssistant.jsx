@@ -48,6 +48,7 @@ export default function AIAssistant({ disease }) {
       await streamChat({ message: trimmedInput, conditionId: disease.id, ephemeral: true, history }, (event) => {
         if (event.type === 'meta' && event.triage !== 'none') patchAnswer(() => ({ triage: event.triage }))
         if (event.type === 'delta') patchAnswer(m => ({ text: m.text + event.text }))
+        if (event.type === 'done') patchAnswer(() => ({ sources: event.sources || [] }))
       })
       patchAnswer(() => ({ streaming: false }))
     } catch (err) {
